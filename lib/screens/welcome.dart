@@ -1,32 +1,51 @@
 import 'package:flutter/material.dart';
+import 'package:geography_board_game/screens/new_game.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Not implemented',
-            style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
-                ),
+    return Scaffold(
+      appBar: AppBar(
+        // backgroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: Colors.cyan,
+        title: Center(
+          child: Text(
+            'Poli cool',
+            style: Theme.of(context).textTheme.headlineLarge,
           ),
-          ElevatedButton(
-            onPressed: () {},
-            // style: ElevatedButton.styleFrom(
-            //   backgroundColor: Colors.black,
-            // ),
-            child: const Text("Νέο παιχνίδι"),
-          ),
-          ElevatedButton(
-            onPressed: () {},
-            child: const Text("Συνέχισε παλιό παιχνίδι"),
-          ),
-        ],
+        ),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Not implemented',
+              style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (ctx) => NewGameScreen(),
+                  ),
+                );
+              },
+              // style: ElevatedButton.styleFrom(
+              //   backgroundColor: Colors.black,
+              // ),
+              child: const Text("Νέο παιχνίδι"),
+            ),
+            ElevatedButton(
+              onPressed: () {},
+              child: const Text("Συνέχισε παλιό παιχνίδι"),
+            ),
+          ],
+        ),
       ),
     );
   }

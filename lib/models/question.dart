@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class Question {
-  const Question({
+class GameQuestion {
+  const GameQuestion({
     required this.questionText,
     required this.questionAnswer,
     required this.icon,
