@@ -1,4 +1,4 @@
-# geography_board_game
+# frontend
 
 A new Flutter project.
 

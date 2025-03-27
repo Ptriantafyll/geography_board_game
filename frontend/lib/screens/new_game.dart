@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geography_board_game/screens/lobby.dart';
 
 class NewGameScreen extends StatefulWidget {
   const NewGameScreen({super.key});
@@ -64,7 +65,13 @@ class _NewGameScreenState extends State<NewGameScreen> {
               ],
             ),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (ctx) => LobbyScreen(),
+                  ),
+                );
+              },
               child: const Text('Εκκίνηση'),
             )
           ],
