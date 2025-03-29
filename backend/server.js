@@ -11,10 +11,18 @@ wss.on("connection", (socket) => {
     const data = JSON.parse(message);
 
     console.log("received: %s", data);
-    socket.send("something");
-    console.log("sent something");
+    // socket.send("something");
+    // console.log("sent something");
 
     if (data.type === "CREATE_LOBBY") {
+      lobbyId = uuidv4();
+
+      lobbyCreatedMessage = JSON.stringify({
+        type: "LOBBY_CREATED",
+        lobbyId: lobbyId,
+      });
+      socket.send(lobbyCreatedMessage);
+      console.log("sent: " + lobbyCreatedMessage);
     }
 
     if (data.type === "JOIN_LOBBY") {
