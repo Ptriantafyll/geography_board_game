@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geography_board_game/screens/join_lobby.dart';
 import 'package:geography_board_game/screens/new_game.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -29,10 +30,9 @@ class WelcomeScreen extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (ctx) => NewGameScreen(),
-                  ),
+                showDialog(
+                  context: context,
+                  builder: (ctx) => NewGameScreen(),
                 );
               },
               // style: ElevatedButton.styleFrom(
@@ -40,6 +40,17 @@ class WelcomeScreen extends StatelessWidget {
               // ),
               child: const Text("Νέο παιχνίδι"),
             ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (ctx) => JoinLobbyScreen(),
+                );
+              },
+              child: const Text("Συμμετοχή σε δωμάτιο"),
+            ),
+            const SizedBox(height: 10),
             ElevatedButton(
               onPressed: () {},
               child: const Text("Συνέχισε παλιό παιχνίδι"),
