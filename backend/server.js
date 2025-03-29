@@ -6,21 +6,20 @@ const redis = require("./redis");
 const wss = new WebSocket.Server({ port: 8080 });
 
 wss.on("connection", async (socket) => {
-  const playerId = uuidv4();
-  console.log(`Player ${playerId} connected`);
+  console.log("New player connected");
 
   socket.on("message", async (message) => {
     try {
       const data = JSON.parse(message);
-
       console.log("received: %s", data);
 
       switch (data.type) {
         case "CREATE_PLAYER":
+          const playerId = uuidv4();
           await createPlayer(socket, playerId, data);
           break;
         case "CREATE_LOBBY":
-          lobbyId = uuidv4();
+          const lobbyId = uuidv4();
           await createLobby(socket, lobbyId);
           await joinLobby(socket, lobbyId, playerId);
           break;
