@@ -44,7 +44,6 @@ Tables:
 2. Game
 
    - ID (String - uuid)
-   - created_at (timestamp)
 
 3. Game_Player
 
