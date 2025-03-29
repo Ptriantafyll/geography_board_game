@@ -12,12 +12,24 @@ CREATE TABLE IF NOT EXISTS Game (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS Lobby (
+    id CHAR(36) PRIMARY KEY,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 CREATE TABLE IF NOT EXISTS Game_Player (
     game_id CHAR(36),
     player_id CHAR(36),
     PRIMARY KEY (game_id, player_id),
     FOREIGN KEY (game_id) REFERENCES Game(id) ON DELETE CASCADE,
+    FOREIGN KEY (player_id) REFERENCES Player(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS Lobby_Player (
+    lobby_id CHAR(36),
+    player_id CHAR(36),
+    PRIMARY KEY (lobby_id, player_id),
+    FOREIGN KEY (lobby_id) REFERENCES Game(id) ON DELETE CASCADE,
     FOREIGN KEY (player_id) REFERENCES Player(id) ON DELETE CASCADE
 );
 

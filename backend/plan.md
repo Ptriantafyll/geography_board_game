@@ -61,6 +61,16 @@ Tables:
    - Type (Enum)
    - Description (String)
 
+6. Lobby
+
+   - ID (String - uuid)
+
+7. Lobby_Player
+
+   - Lobby ID (FOREIGN KEY)
+   - Player ID (FOREIGN KEY)
+   - lobby_id, player_id (PRIMARY KEY)
+
 **Redis (on the machine)**
 
 | Data            | Stored in                                                     |

@@ -1,40 +1,100 @@
 const WebSocket = require("ws");
 const { v4: uuidv4 } = require("uuid");
+const pool = require("./db");
+const redis = require("./redis");
 
 const wss = new WebSocket.Server({ port: 8080 });
 
-wss.on("connection", (socket) => {
+wss.on("connection", async (socket) => {
   const playerId = uuidv4();
   console.log(`Player ${playerId} connected`);
 
-  socket.on("message", (message) => {
-    const data = JSON.parse(message);
+  socket.on("message", async (message) => {
+    try {
+      const data = JSON.parse(message);
 
-    console.log("received: %s", data);
-    // socket.send("something");
-    // console.log("sent something");
+      console.log("received: %s", data);
 
-    if (data.type === "CREATE_LOBBY") {
-      lobbyId = uuidv4();
-
-      lobbyCreatedMessage = JSON.stringify({
-        type: "LOBBY_CREATED",
-        lobbyId: lobbyId,
-      });
-      socket.send(lobbyCreatedMessage);
-      console.log("sent: " + lobbyCreatedMessage);
-    }
-
-    if (data.type === "JOIN_LOBBY") {
-    }
-
-    if (data.type === "LEAVE_LOBBY") {
+      switch (data.type) {
+        case "CREATE_PLAYER":
+          await createPlayer(socket, playerId, data);
+          break;
+        case "CREATE_LOBBY":
+          await createLobby(socket);
+          break;
+        case "JOIN_LOBBY":
+          await joinLobby(socket, data);
+          break;
+        default:
+          socket.send(
+            JSON.stringify({ type: "ERROR", message: "Unknown action" })
+          );
+          break;
+      }
+    } catch (error) {
+      console.error("❌ Error processing message:", error);
+      socket.send(JSON.stringify({ type: "ERROR", message: error.message }));
     }
   });
 
-  socket.on("close", () => {
+  socket.on("close", async () => {
+    await deletePlayer(socket, playerId);
     console.log(`Player ${playerId} disconnected`);
   });
 });
 
 console.log("Web socket server is running");
+
+// Creates a new player
+async function createPlayer(websocket, playerId, data) {
+  try {
+    playerName = data.name;
+    playerColor = data.color;
+    playerCreatedMessage = JSON.stringify({
+      type: "PLAYER_CREATED",
+    });
+
+    await pool.query("INSERT INTO Player (id, name, color) VALUES (?, ?, ?)", [
+      playerId,
+      playerName,
+      playerColor,
+    ]);
+    await websocket.send(JSON.stringify({ playerCreatedMessage }));
+  } catch (error) {
+    console.error("Error creating Player", error);
+  }
+}
+
+// Creates a new player
+async function deletePlayer(websocket, playerId) {
+  try {
+    playerDeletedMessage = JSON.stringify({
+      type: "PLAYER_DELETED",
+    });
+
+    await pool.query("DELETE FROM Player WHERE id=?", playerId);
+    await websocket.send(JSON.stringify({ playerDeletedMessage }));
+    console.log("Deleted player ", playerId);
+  } catch (error) {
+    console.error("Error deleting Player", error);
+  }
+}
+
+// Creates a new lobby
+async function createLobby(websocket) {
+  lobbyId = uuidv4();
+  lobbyCreatedMessage = JSON.stringify({
+    type: "LOBBY_CREATED",
+    lobbyId: lobbyId,
+  });
+
+  try {
+    await pool.query("INSERT INTO Lobby (id) VALUES (?)", lobbyId);
+    await websocket.send(lobbyCreatedMessage);
+  } catch (error) {
+    console.error("Error creating lobby", error);
+  }
+}
+
+// Player joins lobby
+async function joinLobby(websocket, data) {}
