@@ -20,10 +20,15 @@ wss.on("connection", async (socket) => {
           await createPlayer(socket, playerId, data);
           break;
         case "CREATE_LOBBY":
-          await createLobby(socket);
+          lobbyId = uuidv4();
+          await createLobby(socket, lobbyId);
+          await joinLobby(socket, lobbyId, playerId);
           break;
         case "JOIN_LOBBY":
           await joinLobby(socket, data);
+          break;
+        case "DELETE_LOBBY":
+          await deleteLobby(socket, data);
           break;
         default:
           socket.send(
@@ -81,8 +86,7 @@ async function deletePlayer(websocket, playerId) {
 }
 
 // Creates a new lobby
-async function createLobby(websocket) {
-  lobbyId = uuidv4();
+async function createLobby(websocket, lobbyId) {
   lobbyCreatedMessage = JSON.stringify({
     type: "LOBBY_CREATED",
     lobbyId: lobbyId,
@@ -97,4 +101,17 @@ async function createLobby(websocket) {
 }
 
 // Player joins lobby
-async function joinLobby(websocket, data) {}
+async function joinLobby(websocket, lobbyId, playerId) {
+  try {
+    await pool.query(
+      "INSERT INTO Lobby_Player (lobby_id, player_id) VALUES (?, ?)",
+      [lobbyId, playerId]
+    );
+    console.log("Player ", playerId, " joined lobby ", lobbyId);
+  } catch (error) {
+    console.error("Error Joining lobby", error);
+  }
+}
+
+// Lobby deleted
+async function deleteLobby(websocket, data) {}

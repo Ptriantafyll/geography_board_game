@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS Lobby_Player (
     lobby_id CHAR(36),
     player_id CHAR(36),
     PRIMARY KEY (lobby_id, player_id),
-    FOREIGN KEY (lobby_id) REFERENCES Game(id) ON DELETE CASCADE,
+    FOREIGN KEY (lobby_id) REFERENCES Lobby(id) ON DELETE CASCADE,
     FOREIGN KEY (player_id) REFERENCES Player(id) ON DELETE CASCADE
 );
 
