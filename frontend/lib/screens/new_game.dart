@@ -72,7 +72,7 @@ class _NewGameScreenState extends State<NewGameScreen> {
                   ),
                 );
               },
-              child: const Text('Εκκίνηση'),
+              child: const Text('Δημιουργία Δωματίου'),
             )
           ],
         ),

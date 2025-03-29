@@ -14,6 +14,7 @@ class PlayerItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(10),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SizedBox(
             height: 24,
