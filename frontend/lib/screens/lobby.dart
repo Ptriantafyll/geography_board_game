@@ -12,13 +12,15 @@ class LobbyScreen extends StatefulWidget {
   const LobbyScreen({
     super.key,
     required this.connectionUri,
-    required this.playerName,
-    required this.playerColor,
+    required this.player,
+    this.isJoinLobby = false,
+    this.lobbyId = '',
   });
 
   final String connectionUri;
-  final String playerName;
-  final String playerColor;
+  final Player player;
+  final bool isJoinLobby;
+  final String lobbyId;
 
   @override
   State<LobbyScreen> createState() => _LobbyScreenState();
@@ -26,13 +28,8 @@ class LobbyScreen extends StatefulWidget {
 
 class _LobbyScreenState extends State<LobbyScreen> {
   String? _lobbyId;
-  final List<Player> _players = [
-    // Player(color: Colors.red, name: 'Maria'),
-    // Player(color: Colors.blue, name: 'Panos'),
-    // Player(color: Colors.green, name: 'Geo'),
-    // Player(color: Colors.yellow, name: 'Xrist'),
-  ];
-
+  bool _lobbyExistsInDb = false;
+  List<Player> _players = [];
   Widget? test;
 
   // connect once to the websocket server
@@ -40,39 +37,50 @@ class _LobbyScreenState extends State<LobbyScreen> {
     Uri.parse("ws://localhost:8080"),
   );
 
-  void createLobby(channel) async {
-    if (channel == null) {
-      showAlertDialog('Error', 'Websocketconnection fialed', context);
-      return;
-    }
-
-    await channel.sink.add(
+  void createLobby(WebSocketChannel channel) {
+    channel.sink.add(
       jsonEncode({
         "type": "CREATE_LOBBY",
       }),
     );
   }
 
-  void createPlayer(channel, String name, String color) async {
-    if (channel == null) {
-      showAlertDialog('Error', 'Websocketconnection fialed', context);
-      return;
-    }
-
-    await channel.sink.add(
+  void createPlayer(WebSocketChannel channel, String name, Color color) {
+    channel.sink.add(
       jsonEncode({
         "type": "CREATE_PLAYER",
         "name": name,
-        "color": color,
+        "color": getStringFromColor(color)!.toUpperCase(),
       }),
     );
 
     _players.add(
       Player(
-        color: getColorFromString(widget.playerColor) ?? Colors.red,
-        name: widget.playerName,
+        color: color,
+        name: name,
       ),
     );
+  }
+
+  void joinLobby(WebSocketChannel channel, String name, String color) {
+    channel.sink.add(
+      jsonEncode({
+        "type": "JOIN_LOBBY",
+        "lobbyId": widget.lobbyId,
+      }),
+    );
+
+    // todo: if I give a false lobby id it continues, make it fail/return
+    // bool lobbyExists = false;
+
+    // if (widget.lobbyId.isNotEmpty && _lobbyExistsInDb) {
+    //   lobbyExists = true;
+    // }
+
+    // if (!lobbyExists) {
+    //   Navigator.of(context).pop();
+    //   showAlertDialog('Μη έγκυρο δωμάτιο', 'Το δωμάτιο δε βρέθηκε', context);
+    // }
   }
 
   @override
@@ -90,10 +98,35 @@ class _LobbyScreenState extends State<LobbyScreen> {
           test = Text('Lobby created with id $_lobbyId');
         });
       }
+
+      if (messageData['type'] == 'PLAYER_JOINED') {
+        List<Player> playersInLobby = [];
+        for (Map player in messageData['playersInLobby']) {
+          playersInLobby.add(
+            Player(
+              name: player['name'],
+              color: getColorFromString(player['color'])!,
+            ),
+          );
+        }
+
+        setState(() {
+          _lobbyExistsInDb = true;
+          _players = [...playersInLobby];
+        });
+      }
     });
 
-    createPlayer(_channel, widget.playerName, widget.playerColor);
-    createLobby(_channel);
+    createPlayer(_channel, widget.player.name, widget.player.color);
+    if (widget.isJoinLobby) {
+      joinLobby(
+        _channel,
+        widget.player.name,
+        getStringFromColor(widget.player.color) ?? '',
+      );
+    } else {
+      createLobby(_channel);
+    }
     // todo: implement backend logic to create lobby, add players etc.
     super.initState();
   }
