@@ -30,7 +30,6 @@ class _JoinLobbyScreenState extends ConsumerState<JoinLobbyScreen> {
       return;
     }
 
-    // todo: add text field for name and color picker
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (ctx) => LobbyScreen(
@@ -99,6 +98,7 @@ class _JoinLobbyScreenState extends ConsumerState<JoinLobbyScreen> {
           ),
         ),
       ),
+      // todo: Add QR Scanner to join lobby
     );
   }
 }

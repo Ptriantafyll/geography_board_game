@@ -126,8 +126,8 @@ class _LobbyScreenState extends State<LobbyScreen> {
       );
     } else {
       createLobby(_channel);
+      // todo: add QR code for lobby id
     }
-    // todo: implement backend logic to create lobby, add players etc.
     super.initState();
   }
 
