@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:geography_board_game/functions/colors.dart';
 import 'package:geography_board_game/functions/websocket.dart';
 import 'package:geography_board_game/models/player.dart';
 import 'package:geography_board_game/widgets/player_item.dart';
@@ -38,17 +39,6 @@ class _LobbyScreenState extends State<LobbyScreen> {
   final _channel = WebSocketChannel.connect(
     Uri.parse("ws://localhost:8080"),
   );
-
-  Color? getColorFromString(String colorName) {
-    var colorMap = {
-      'red': Colors.red,
-      'blue': Colors.blue,
-      'green': Colors.green,
-      'yellow': Colors.yellow,
-    };
-
-    return colorMap[colorName.toLowerCase()];
-  }
 
   void createLobby(channel) async {
     if (channel == null) {

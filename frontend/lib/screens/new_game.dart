@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geography_board_game/functions/colors.dart';
 import 'package:geography_board_game/functions/websocket.dart';
 import 'package:geography_board_game/screens/lobby.dart';
 
@@ -12,7 +13,17 @@ class NewGameScreen extends StatefulWidget {
 }
 
 class _NewGameScreenState extends State<NewGameScreen> {
-  Set<int> selectedNumOfPlayers = {2};
+  final _availableColors = [
+    Colors.red,
+    Colors.blue,
+    Colors.green,
+    Colors.yellow,
+    Colors.red,
+    Colors.blue,
+    Colors.green,
+    Colors.yellow,
+  ];
+  int _selectedIndex = 0;
   bool _specialPowersSelected = false;
   final _playerNameController = TextEditingController();
   // final color
@@ -27,12 +38,30 @@ class _NewGameScreenState extends State<NewGameScreen> {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (ctx) => LobbyScreen(
-          connectionUri: "ws://localhost:8080",
-          playerName: _playerNameController.text,
-          playerColor: 'RED', //todo get this from segmented button
-        ),
+            connectionUri: "ws://localhost:8080",
+            playerName: _playerNameController.text,
+            playerColor:
+                getStringFromColor(_availableColors[_selectedIndex]) ?? 'Red'),
       ),
     );
+  }
+
+  BorderRadius? createBorders(List<Color> colors, index) {
+    if (index == colors.length - 1) {
+      return BorderRadius.only(
+        topRight: Radius.circular(20),
+        bottomRight: Radius.circular(20),
+      );
+    }
+
+    if (index == 0) {
+      return BorderRadius.only(
+        topLeft: Radius.circular(20),
+        bottomLeft: Radius.circular(20),
+      );
+    }
+
+    return null;
   }
 
   @override
@@ -51,6 +80,57 @@ class _NewGameScreenState extends State<NewGameScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const Text('Όνομα παίκτη'),
+              Padding(
+                padding: const EdgeInsets.only(left: 10, right: 10),
+                child: TextField(
+                  maxLength: 20,
+                  controller: _playerNameController,
+                  decoration: InputDecoration(
+                    label: Text('Όνομα'),
+                  ),
+                ),
+              ),
+              const Text('Χρώμα παίκτη'),
+              Padding(
+                padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
+                child: ToggleButtons(
+                  isSelected: List.generate(_availableColors.length,
+                      (index) => index == _selectedIndex),
+                  constraints: BoxConstraints(
+                    maxWidth: 40,
+                    maxHeight: 40,
+                  ),
+                  selectedColor: Colors.white,
+                  fillColor: _availableColors[_selectedIndex],
+                  splashColor: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  borderColor: Colors.black,
+                  selectedBorderColor: Colors.black,
+                  onPressed: (int index) {
+                    setState(() {
+                      _selectedIndex = index;
+                    });
+                  },
+                  children: List.generate(_availableColors.length, (index) {
+                    return Container(
+                      height: 30,
+                      width: 30,
+                      decoration: BoxDecoration(
+                        color: _availableColors[index],
+                        border: Border.all(
+                          color: _selectedIndex == index
+                              ? Colors.black
+                              : Colors.transparent,
+                          width: 3,
+                        ),
+                        borderRadius: createBorders(_availableColors, index),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+              const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -64,38 +144,6 @@ class _NewGameScreenState extends State<NewGameScreen> {
                     },
                   )
                 ],
-              ),
-              const Text('Αριθμός παικτών'),
-              Padding(
-                padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
-                child: SegmentedButton<int>(
-                  showSelectedIcon: false,
-                  segments: <ButtonSegment<int>>[
-                    for (int i = 2; i < 9; i++)
-                      ButtonSegment<int>(
-                        value: i,
-                        label: Text('$i'),
-                      ),
-                  ],
-                  selected: selectedNumOfPlayers,
-                  onSelectionChanged: (Set<int> newSelection) {
-                    setState(() {
-                      selectedNumOfPlayers = {newSelection.first};
-                    });
-                  },
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text('Όνομα παίκτη'),
-              Padding(
-                padding: const EdgeInsets.only(left: 10, right: 10),
-                child: TextField(
-                  maxLength: 20,
-                  controller: _playerNameController,
-                  decoration: InputDecoration(
-                    label: Text('Name'),
-                  ),
-                ),
               ),
               ElevatedButton(
                 onPressed: onCreateLobby,
