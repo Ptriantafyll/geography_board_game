@@ -38,18 +38,22 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
       return;
     }
 
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (ctx) => LobbyScreen(),
-      ),
-    );
+    // todo: add text field for name and color picker
+    // Navigator.of(context).pushReplacement(
+    //   MaterialPageRoute(
+    //     builder: (ctx) => LobbyScreen(
+    //       connectionUri: "ws://localhost:8080",
+    //       playerName: ,
+    //     ),
+    //   ),
+    // );
   }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Container(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(50),
         child: Dialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(10)),

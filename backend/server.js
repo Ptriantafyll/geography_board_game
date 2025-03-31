@@ -7,6 +7,7 @@ const wss = new WebSocket.Server({ port: 8080 });
 
 wss.on("connection", async (socket) => {
   console.log("New player connected");
+  const playerId = uuidv4();
 
   socket.on("message", async (message) => {
     try {
@@ -15,7 +16,6 @@ wss.on("connection", async (socket) => {
 
       switch (data.type) {
         case "CREATE_PLAYER":
-          const playerId = uuidv4();
           await createPlayer(socket, playerId, data);
           break;
         case "CREATE_LOBBY":
@@ -110,7 +110,9 @@ async function joinLobby(websocket, lobbyId, playerId) {
   } catch (error) {
     console.error("Error Joining lobby", error);
   }
+
+  //todo send the connected players to the lobby to everyone in the lobby
 }
 
-// Lobby deleted
+// Lobby deleted when all players have left
 async function deleteLobby(websocket, data) {}
