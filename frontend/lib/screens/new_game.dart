@@ -1,31 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:geography_board_game/functions/colors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geography_board_game/functions/websocket.dart';
+import 'package:geography_board_game/models/player.dart';
+import 'package:geography_board_game/providers/player_colors.dart';
 import 'package:geography_board_game/screens/lobby.dart';
+import 'package:geography_board_game/widgets/color_picker.dart';
 
-class NewGameScreen extends StatefulWidget {
+class NewGameScreen extends ConsumerStatefulWidget {
   const NewGameScreen({super.key});
 
   @override
-  State<NewGameScreen> createState() {
+  ConsumerState<NewGameScreen> createState() {
     return _NewGameScreenState();
   }
 }
 
-class _NewGameScreenState extends State<NewGameScreen> {
-  final _availableColors = [
-    Colors.red,
-    Colors.blue,
-    Colors.green,
-    Colors.yellow,
-    Colors.red,
-    Colors.blue,
-    Colors.green,
-    Colors.yellow,
-  ];
+class _NewGameScreenState extends ConsumerState<NewGameScreen> {
+  List<Color> _availableColors = [];
   int _selectedIndex = 0;
-  bool _specialPowersSelected = false;
   final _playerNameController = TextEditingController();
+  bool _specialPowersSelected = false;
   // final color
 
   void onCreateLobby() {
@@ -38,34 +32,19 @@ class _NewGameScreenState extends State<NewGameScreen> {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (ctx) => LobbyScreen(
-            connectionUri: "ws://localhost:8080",
-            playerName: _playerNameController.text,
-            playerColor:
-                getStringFromColor(_availableColors[_selectedIndex]) ?? 'Red'),
+          connectionUri: "ws://localhost:8080",
+          player: Player(
+            color: _availableColors[_selectedIndex],
+            name: _playerNameController.text,
+          ),
+        ),
       ),
     );
   }
 
-  BorderRadius? createBorders(List<Color> colors, index) {
-    if (index == colors.length - 1) {
-      return BorderRadius.only(
-        topRight: Radius.circular(20),
-        bottomRight: Radius.circular(20),
-      );
-    }
-
-    if (index == 0) {
-      return BorderRadius.only(
-        topLeft: Radius.circular(20),
-        bottomLeft: Radius.circular(20),
-      );
-    }
-
-    return null;
-  }
-
   @override
   Widget build(BuildContext context) {
+    _availableColors = ref.read(colorsProvider);
     // final webSocketConnection = ref
     //     .read(websocketProvider.notifier)
     //     .connectToWebSocketServer("ws://localhost:8080");
@@ -92,43 +71,13 @@ class _NewGameScreenState extends State<NewGameScreen> {
                 ),
               ),
               const Text('Χρώμα παίκτη'),
-              Padding(
-                padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
-                child: ToggleButtons(
-                  isSelected: List.generate(_availableColors.length,
-                      (index) => index == _selectedIndex),
-                  constraints: BoxConstraints(
-                    maxWidth: 40,
-                    maxHeight: 40,
-                  ),
-                  selectedColor: Colors.white,
-                  fillColor: _availableColors[_selectedIndex],
-                  splashColor: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  borderColor: Colors.black,
-                  selectedBorderColor: Colors.black,
-                  onPressed: (int index) {
-                    setState(() {
-                      _selectedIndex = index;
-                    });
-                  },
-                  children: List.generate(_availableColors.length, (index) {
-                    return Container(
-                      height: 30,
-                      width: 30,
-                      decoration: BoxDecoration(
-                        color: _availableColors[index],
-                        border: Border.all(
-                          color: _selectedIndex == index
-                              ? Colors.black
-                              : Colors.transparent,
-                          width: 3,
-                        ),
-                        borderRadius: createBorders(_availableColors, index),
-                      ),
-                    );
-                  }),
-                ),
+              ColorPicker(
+                availableColors: _availableColors,
+                onSelectColor: (index) {
+                  setState(() {
+                    _selectedIndex = index;
+                  });
+                },
               ),
               const SizedBox(height: 10),
               Row(
