@@ -21,10 +21,9 @@ wss.on("connection", async (socket) => {
         case "CREATE_LOBBY":
           const lobbyId = uuidv4();
           await createLobby(socket, lobbyId);
-          await joinLobby(socket, lobbyId, playerId);
           break;
         case "JOIN_LOBBY":
-          await joinLobby(socket, data);
+          await joinLobby(socket, data, playerId);
           break;
         case "DELETE_LOBBY":
           await deleteLobby(socket, data);
@@ -93,6 +92,17 @@ async function createLobby(websocket, lobbyId) {
 
   try {
     await pool.query("INSERT INTO Lobby (id) VALUES (?)", lobbyId);
+
+    try {
+      await pool.query(
+        "INSERT INTO Lobby_Player (lobby_id, player_id) VALUES (?, ?)",
+        [lobbyId, playerId]
+      );
+      console.log("Player ", playerId, " joined lobby ", lobbyId);
+    } catch (error) {
+      console.error("Error Joining lobby", error);
+    }
+
     await websocket.send(lobbyCreatedMessage);
   } catch (error) {
     console.error("Error creating lobby", error);
@@ -100,18 +110,28 @@ async function createLobby(websocket, lobbyId) {
 }
 
 // Player joins lobby
-async function joinLobby(websocket, lobbyId, playerId) {
+async function joinLobby(websocket, data, playerId) {
   try {
     await pool.query(
       "INSERT INTO Lobby_Player (lobby_id, player_id) VALUES (?, ?)",
-      [lobbyId, playerId]
+      [data.lobbyId, playerId]
     );
-    console.log("Player ", playerId, " joined lobby ", lobbyId);
+
+    playersInLobby = await pool.query(
+      "SELECT Player.name, Player.color FROM Player JOIN Lobby_Player ON Player.id = Lobby_Player.player_id JOIN Lobby ON Lobby.id = Lobby_Player.lobby_id WHERE Lobby.id = ?",
+      data.lobbyId
+    );
+
+    playerJoinedMessage = JSON.stringify({
+      type: "PLAYER_JOINED",
+      playersInLobby: playersInLobby[0],
+    });
+
+    console.log("Player ", playerId, " joined lobby ", data.lobbyId);
+    await websocket.send(playerJoinedMessage);
   } catch (error) {
     console.error("Error Joining lobby", error);
   }
-
-  //todo send the connected players to the lobby to everyone in the lobby
 }
 
 // Lobby deleted when all players have left
