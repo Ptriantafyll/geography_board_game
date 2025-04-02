@@ -1,156 +1,83 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:geography_board_game/functions/colors.dart';
-import 'package:geography_board_game/functions/websocket.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geography_board_game/functions/alert.dart';
 import 'package:geography_board_game/models/player.dart';
+import 'package:geography_board_game/models/websocket_response.dart';
+import 'package:geography_board_game/providers/websocket_provider.dart';
 import 'package:geography_board_game/widgets/player_item.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
-// import 'package:uuid/uuid.dart';
 
-class LobbyScreen extends StatefulWidget {
+class LobbyScreen extends ConsumerStatefulWidget {
   const LobbyScreen({
     super.key,
-    required this.connectionUri,
     required this.player,
     this.isJoinLobby = false,
     this.lobbyId = '',
   });
 
-  final String connectionUri;
   final Player player;
   final bool isJoinLobby;
   final String lobbyId;
 
   @override
-  State<LobbyScreen> createState() => _LobbyScreenState();
+  ConsumerState<LobbyScreen> createState() => _LobbyScreenState();
 }
 
-class _LobbyScreenState extends State<LobbyScreen> {
-  String? _lobbyId;
-  bool _lobbyExistsInDb = false;
+class _LobbyScreenState extends ConsumerState<LobbyScreen> {
+  late WebsocketNotifier webSocketNotifier;
+  Widget? lobbyIdWidget;
   List<Player> _players = [];
-  Widget? test;
-
-  // connect once to the websocket server
-  final _channel = WebSocketChannel.connect(
-    Uri.parse("ws://localhost:8080"),
-  );
-
-  void createLobby(WebSocketChannel channel) {
-    channel.sink.add(
-      jsonEncode({
-        "type": "CREATE_LOBBY",
-      }),
-    );
-  }
-
-  void createPlayer(WebSocketChannel channel, String name, Color color) {
-    channel.sink.add(
-      jsonEncode({
-        "type": "CREATE_PLAYER",
-        "name": name,
-        "color": getStringFromColor(color)!.toUpperCase(),
-      }),
-    );
-
-    _players.add(
-      Player(
-        color: color,
-        name: name,
-      ),
-    );
-  }
-
-  void joinLobby(WebSocketChannel channel, String name, String color) {
-    channel.sink.add(
-      jsonEncode({
-        "type": "JOIN_LOBBY",
-        "lobbyId": widget.lobbyId,
-      }),
-    );
-  }
-
-  void exitOnWrongLobbyId(WebSocketChannel channel) {
-    bool lobbyExists = false;
-
-    if (widget.lobbyId.isNotEmpty && _lobbyExistsInDb) {
-      lobbyExists = true;
-    }
-
-    if (!lobbyExists) {
-      Navigator.of(context).pop();
-      showAlertDialog('Μη έγκυρο δωμάτιο', 'Το δωμάτιο δε βρέθηκε', context);
-    }
-  }
 
   @override
   void initState() {
+    // todo: maybe create player when starting the app and only joining here
     super.initState();
-    // todo: implement other types
-    _channel.stream.listen((message) {
-      if (message == null) {
-        return;
-      }
 
-      final messageData = jsonDecode(message);
-      if (messageData['type'] == 'LOBBY_CREATED') {
-        setState(() {
-          _lobbyId = messageData['lobbyId'];
-          test = Text('Lobby id $_lobbyId');
-        });
-      }
+    webSocketNotifier = ref.read(websocketProvider.notifier);
 
-      if (messageData['type'] == 'PLAYER_JOINED') {
-        List<Player> playersInLobby = [];
-        for (Map player in messageData['playersInLobby']) {
-          playersInLobby.add(
-            Player(
-              name: player['name'],
-              color: getColorFromString(player['color'])!,
-            ),
-          );
-        }
-
-        setState(() {
-          test = Text('Lobby id ${widget.lobbyId}');
-          _lobbyExistsInDb = true;
-          _players = playersInLobby;
-        });
-      }
-
-      if (messageData['type'] == 'PLAYER_JOIN_FAILED') {
-        exitOnWrongLobbyId(_channel);
-        // todo: if I give a false lobby id it continues, make it fail/return
-      }
-    }, onError: (error) {
-      print("Websocket error: $error");
-    }, onDone: () {
-      print("Websocket closed");
+    Future.microtask(() {
+      webSocketNotifier.createPlayer(widget.player.name, widget.player.color);
     });
+    _players.add(Player(color: widget.player.color, name: widget.player.name));
 
-    createPlayer(_channel, widget.player.name, widget.player.color);
     if (widget.isJoinLobby) {
-      joinLobby(
-        _channel,
-        widget.player.name,
-        getStringFromColor(widget.player.color) ?? '',
-      );
+      Future.microtask(() {
+        webSocketNotifier.joinLobby(widget.lobbyId);
+      });
     } else {
-      createLobby(_channel);
+      Future.microtask(() {
+        webSocketNotifier.createLobby();
+      });
       // todo: add QR code for lobby id
     }
   }
 
   @override
-  void dispose() {
-    // close the connection when the screen is closed
-    _channel.sink.close();
+  void dispose() async {
+    // todo: maybe leave lobby instead of deleting and creating player when starting the app
+    // delete player when screen is closed
+    // ref.read(websocketProvider.notifier).deletePlayer();
+    webSocketNotifier.deletePlayer();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final response = ref.watch(websocketProvider);
+
+    if (response is PlayerJoinFailedResponse) {
+      Navigator.of(context).pop();
+      showAlertDialog('Μη έγκυρο δωμάτιο', 'Το δωμάτιο δε βρέθηκε', context);
+    }
+
+    if (response is LobbyCreatedResponse) {
+      lobbyIdWidget = Text('Lobby id: ${response.lobbyId}');
+    }
+
+    if (response is PlayerJoinedResponse) {
+      _players = response.playersInLobby;
+      lobbyIdWidget = Text('Lobby id: ${response.lobbyId}');
+    }
+
     return Scaffold(
       appBar: AppBar(
         // backgroundColor: Theme.of(context).colorScheme.primary,
@@ -164,7 +91,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
       ),
       body: Column(
         children: [
-          test ?? Text('Lobby not yet created'),
+          lobbyIdWidget ?? Text('Lobby not yet created'),
           Expanded(
             child: ListView.builder(
               itemCount: _players.length,

@@ -20,13 +20,16 @@ wss.on("connection", async (socket) => {
           break;
         case "CREATE_LOBBY":
           const lobbyId = uuidv4();
-          await createLobby(socket, lobbyId);
+          await createLobby(socket, lobbyId, playerId);
           break;
         case "JOIN_LOBBY":
           await joinLobby(socket, data, playerId);
           break;
         case "DELETE_LOBBY":
           await deleteLobby(socket, data);
+          break;
+        case "DELETE_PLAYER":
+          await deletePlayer(socket, playerId);
           break;
         default:
           socket.send(
@@ -55,6 +58,7 @@ async function createPlayer(websocket, playerId, data) {
     playerColor = data.color;
     playerCreatedMessage = JSON.stringify({
       type: "PLAYER_CREATED",
+      playerId: playerId,
     });
 
     await pool.query("INSERT INTO Player (id, name, color) VALUES (?, ?, ?)", [
@@ -63,6 +67,7 @@ async function createPlayer(websocket, playerId, data) {
       playerColor,
     ]);
     await websocket.send(JSON.stringify({ playerCreatedMessage }));
+    console.log("sent ", playerCreatedMessage);
   } catch (error) {
     console.error("Error creating Player", error);
   }
@@ -84,7 +89,7 @@ async function deletePlayer(websocket, playerId) {
 }
 
 // Creates a new lobby
-async function createLobby(websocket, lobbyId) {
+async function createLobby(websocket, lobbyId, playerId) {
   lobbyCreatedMessage = JSON.stringify({
     type: "LOBBY_CREATED",
     lobbyId: lobbyId,
@@ -125,6 +130,7 @@ async function joinLobby(websocket, data, playerId) {
     playerJoinedMessage = JSON.stringify({
       type: "PLAYER_JOINED",
       playersInLobby: playersInLobby[0],
+      lobbyId: data.lobbyId,
     });
 
     console.log("Player ", playerId, " joined lobby ", data.lobbyId);

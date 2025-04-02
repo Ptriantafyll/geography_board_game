@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geography_board_game/functions/websocket.dart';
+import 'package:geography_board_game/functions/alert.dart';
 import 'package:geography_board_game/models/player.dart';
 import 'package:geography_board_game/providers/player_colors.dart';
 import 'package:geography_board_game/screens/lobby.dart';
@@ -33,7 +33,6 @@ class _JoinLobbyScreenState extends ConsumerState<JoinLobbyScreen> {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (ctx) => LobbyScreen(
-          connectionUri: "ws://localhost:8080",
           player: Player(
             color: _availableColors[_selectedIndex],
             name: _playerNameController.text,
