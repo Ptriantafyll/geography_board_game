@@ -69,22 +69,24 @@ class _LobbyScreenState extends State<LobbyScreen> {
         "lobbyId": widget.lobbyId,
       }),
     );
+  }
 
-    // todo: if I give a false lobby id it continues, make it fail/return
-    // bool lobbyExists = false;
+  void exitOnWrongLobbyId(WebSocketChannel channel) {
+    bool lobbyExists = false;
 
-    // if (widget.lobbyId.isNotEmpty && _lobbyExistsInDb) {
-    //   lobbyExists = true;
-    // }
+    if (widget.lobbyId.isNotEmpty && _lobbyExistsInDb) {
+      lobbyExists = true;
+    }
 
-    // if (!lobbyExists) {
-    //   Navigator.of(context).pop();
-    //   showAlertDialog('Μη έγκυρο δωμάτιο', 'Το δωμάτιο δε βρέθηκε', context);
-    // }
+    if (!lobbyExists) {
+      Navigator.of(context).pop();
+      showAlertDialog('Μη έγκυρο δωμάτιο', 'Το δωμάτιο δε βρέθηκε', context);
+    }
   }
 
   @override
   void initState() {
+    super.initState();
     // todo: implement other types
     _channel.stream.listen((message) {
       if (message == null) {
@@ -95,7 +97,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
       if (messageData['type'] == 'LOBBY_CREATED') {
         setState(() {
           _lobbyId = messageData['lobbyId'];
-          test = Text('Lobby created with id $_lobbyId');
+          test = Text('Lobby id $_lobbyId');
         });
       }
 
@@ -111,10 +113,20 @@ class _LobbyScreenState extends State<LobbyScreen> {
         }
 
         setState(() {
+          test = Text('Lobby id ${widget.lobbyId}');
           _lobbyExistsInDb = true;
-          _players = [...playersInLobby];
+          _players = playersInLobby;
         });
       }
+
+      if (messageData['type'] == 'PLAYER_JOIN_FAILED') {
+        exitOnWrongLobbyId(_channel);
+        // todo: if I give a false lobby id it continues, make it fail/return
+      }
+    }, onError: (error) {
+      print("Websocket error: $error");
+    }, onDone: () {
+      print("Websocket closed");
     });
 
     createPlayer(_channel, widget.player.name, widget.player.color);
@@ -128,7 +140,6 @@ class _LobbyScreenState extends State<LobbyScreen> {
       createLobby(_channel);
       // todo: add QR code for lobby id
     }
-    super.initState();
   }
 
   @override

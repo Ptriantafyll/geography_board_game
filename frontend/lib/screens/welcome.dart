@@ -53,6 +53,7 @@ class WelcomeScreen extends StatelessWidget {
             const SizedBox(height: 10),
             ElevatedButton(
               onPressed: () {},
+              // todo: make the user able to log into an old unfinished game
               child: const Text("Συνέχισε παλιό παιχνίδι"),
             ),
           ],

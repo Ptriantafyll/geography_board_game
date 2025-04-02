@@ -130,7 +130,12 @@ async function joinLobby(websocket, data, playerId) {
     console.log("Player ", playerId, " joined lobby ", data.lobbyId);
     await websocket.send(playerJoinedMessage);
   } catch (error) {
-    console.error("Error Joining lobby", error);
+    // console.error("Error Joining lobby", error);
+    playerJoinedMessage = JSON.stringify({
+      type: "PLAYER_JOIN_FAILED",
+    });
+    console.log("Sending: ", playerJoinedMessage);
+    await websocket.send(playerJoinedMessage);
   }
 }
 
