@@ -52,6 +52,8 @@ class WebsocketNotifier extends StateNotifier<WebsocketResponse?> {
     _channel.sink.add(jsonEncode(joinLobbyRequest.toJson()));
   }
 
+  void removePlayers() {}
+
   @override
   void dispose() {
     _channel.sink.close(status.normalClosure);

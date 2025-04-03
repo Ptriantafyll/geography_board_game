@@ -74,16 +74,21 @@ WebsocketResponse parseWebsocketResponse(String jsonString) {
 
   switch (json['type']) {
     case 'PLAYER_CREATED':
+      print(json);
       return PlayerCreatedResponse.fromJson(json);
     case 'PLAYER_DELETED':
+      print(json);
       return PlayerDeletedResponse();
     case 'LOBBY_CREATED':
+      print(json);
       return LobbyCreatedResponse.fromJson(json);
     case 'PLAYER_JOINED':
+      print(json);
       return PlayerJoinedResponse.fromJson(json);
     case 'PLAYER_JOIN_FAILED':
+      print(json);
       return PlayerJoinFailedResponse();
     default:
-      throw Exception("Unknown message type: ${json['type']}");
+      throw Exception("Unknown message type: ${json['type']}. All Json: $json");
   }
 }

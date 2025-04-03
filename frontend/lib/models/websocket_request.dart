@@ -45,7 +45,7 @@ class JoinLobbyRequest {
   final String type = 'JOIN_LOBBY';
   final String lobbyId;
 
-  // convert CreatePlayerRequest object to JSON
+  // convert joinLobbyRequest object to JSON
   Map<String, dynamic> toJson() {
     return {
       'type': type,
@@ -63,7 +63,7 @@ class DeleteLobbyRequest {
   final String type = 'DELETE_LOBBY';
   final String lobbyId;
 
-  // convert CreatePlayerRequest object to JSON
+  // convert DeleteLobbyRequest object to JSON
   Map<String, dynamic> toJson() {
     return {
       'type': type,
@@ -78,7 +78,7 @@ class DeletePlayerRequest {
 
   final String type = 'DELETE_PLAYER';
 
-  // convert CreatePlayerRequest object to JSON
+  // convert DeleteLobbyRequest object to JSON
   Map<String, dynamic> toJson() {
     return {
       'type': type,

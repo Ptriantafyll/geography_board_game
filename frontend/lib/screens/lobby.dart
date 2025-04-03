@@ -31,19 +31,22 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
   void initState() {
     // todo: maybe create player when starting the app and only joining here
     super.initState();
-
     webSocketNotifier = ref.read(websocketProvider.notifier);
 
     Future.microtask(() {
       webSocketNotifier.createPlayer(widget.player.name, widget.player.color);
     });
-    _players.add(Player(color: widget.player.color, name: widget.player.name));
+    // _players.add(Player(color: widget.player.color, name: widget.player.name));
+    // print("before players $_players");
+    // _players = [Player(color: widget.player.color, name: widget.player.name)];
 
     if (widget.isJoinLobby) {
+      print('ere');
       Future.microtask(() {
         webSocketNotifier.joinLobby(widget.lobbyId);
       });
     } else {
+      print('here');
       Future.microtask(() {
         webSocketNotifier.createLobby();
       });
@@ -57,24 +60,32 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
     // delete player when screen is closed
     // ref.read(websocketProvider.notifier).deletePlayer();
     webSocketNotifier.deletePlayer();
+    webSocketNotifier.removePlayers();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final response = ref.watch(websocketProvider);
+    print("players in build $_players");
 
     if (response is PlayerJoinFailedResponse) {
       Navigator.of(context).pop();
-      showAlertDialog('Μη έγκυρο δωμάτιο', 'Το δωμάτιο δε βρέθηκε', context);
+      // todo: do this at lobby screen
+      // showAlertDialog('Μη έγκυρο δωμάτιο', 'Το δωμάτιο δε βρέθηκε', context);
+      print('player join failed');
     }
 
     if (response is LobbyCreatedResponse) {
+      print('lobby created');
       lobbyIdWidget = Text('Lobby id: ${response.lobbyId}');
+      _players = [Player(color: widget.player.color, name: widget.player.name)];
     }
 
     if (response is PlayerJoinedResponse) {
+      print("player joined");
       _players = response.playersInLobby;
+      print("players now: $_players");
       lobbyIdWidget = Text('Lobby id: ${response.lobbyId}');
     }
 
