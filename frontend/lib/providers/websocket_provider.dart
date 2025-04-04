@@ -27,9 +27,10 @@ class WebsocketNotifier extends StateNotifier<WebsocketResponse?> {
     });
   }
 
-  void createPlayer(String name, Color color) {
+  CreatePlayerRequest createPlayer(String name, Color color) {
     final createPlayerRequest = CreatePlayerRequest(name: name, color: color);
     _channel.sink.add(jsonEncode(createPlayerRequest.toJson()));
+    return createPlayerRequest;
   }
 
   void deletePlayer() {
@@ -37,9 +38,10 @@ class WebsocketNotifier extends StateNotifier<WebsocketResponse?> {
     _channel.sink.add(jsonEncode(deletePlayerRequest.toJson()));
   }
 
-  void createLobby() {
+  createLobby() {
     final createLobbyRequest = CreateLobbyRequest();
     _channel.sink.add(jsonEncode(createLobbyRequest.toJson()));
+    return createLobbyRequest;
   }
 
   void deleteLobby(lobbyId) {
@@ -47,9 +49,10 @@ class WebsocketNotifier extends StateNotifier<WebsocketResponse?> {
     _channel.sink.add(jsonEncode(deleteLobbyRequest.toJson()));
   }
 
-  void joinLobby(lobbyId) {
+  JoinLobbyRequest joinLobby(lobbyId) {
     final joinLobbyRequest = JoinLobbyRequest(lobbyId: lobbyId);
     _channel.sink.add(jsonEncode(joinLobbyRequest.toJson()));
+    return joinLobbyRequest;
   }
 
   void removePlayers() {}

@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geography_board_game/functions/alert.dart';
 import 'package:geography_board_game/models/player.dart';
-import 'package:geography_board_game/models/websocket_response.dart';
 import 'package:geography_board_game/providers/websocket_provider.dart';
 import 'package:geography_board_game/widgets/player_item.dart';
 
 class LobbyScreen extends ConsumerStatefulWidget {
   const LobbyScreen({
     super.key,
-    required this.player,
+    required this.owner,
+    required this.players,
+    required this.lobbyId,
     this.isJoinLobby = false,
-    this.lobbyId = '',
   });
 
-  final Player player;
+  final Player owner;
+  final List<Player> players;
   final bool isJoinLobby;
   final String lobbyId;
 
@@ -24,69 +24,26 @@ class LobbyScreen extends ConsumerStatefulWidget {
 
 class _LobbyScreenState extends ConsumerState<LobbyScreen> {
   late WebsocketNotifier webSocketNotifier;
-  Widget? lobbyIdWidget;
   List<Player> _players = [];
 
   @override
   void initState() {
-    // todo: maybe create player when starting the app and only joining here
-    super.initState();
     webSocketNotifier = ref.read(websocketProvider.notifier);
-
-    Future.microtask(() {
-      webSocketNotifier.createPlayer(widget.player.name, widget.player.color);
-    });
-    // _players.add(Player(color: widget.player.color, name: widget.player.name));
-    // print("before players $_players");
-    // _players = [Player(color: widget.player.color, name: widget.player.name)];
-
-    if (widget.isJoinLobby) {
-      print('ere');
-      Future.microtask(() {
-        webSocketNotifier.joinLobby(widget.lobbyId);
-      });
-    } else {
-      print('here');
-      Future.microtask(() {
-        webSocketNotifier.createLobby();
-      });
-      // todo: add QR code for lobby id
-    }
+    super.initState();
   }
 
   @override
   void dispose() async {
     // todo: maybe leave lobby instead of deleting and creating player when starting the app
     // delete player when screen is closed
-    // ref.read(websocketProvider.notifier).deletePlayer();
     webSocketNotifier.deletePlayer();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final response = ref.watch(websocketProvider);
-    print("players in build $_players");
-
-    if (response is PlayerJoinFailedResponse) {
-      // todo: do this at join screen
-      // showAlertDialog('Μη έγκυρο δωμάτιο', 'Το δωμάτιο δε βρέθηκε', context);
-      print('player join failed');
-      Navigator.of(context).pop();
-    }
-
-    if (response is LobbyCreatedResponse) {
-      print('lobby created');
-      lobbyIdWidget = Text('Lobby id: ${response.lobbyId}');
-      _players = [Player(color: widget.player.color, name: widget.player.name)];
-    }
-
-    if (response is PlayerJoinedResponse) {
-      print("player joined");
-      _players = response.playersInLobby;
-      print("players now: $_players");
-      lobbyIdWidget = Text('Lobby id: ${response.lobbyId}');
-    }
+    _players = widget.players;
+    final lobbyIdWidget = Text('Lobby id: ${widget.lobbyId}');
 
     return Scaffold(
       appBar: AppBar(
@@ -101,7 +58,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
       ),
       body: Column(
         children: [
-          lobbyIdWidget ?? Text('Lobby not yet created'),
+          lobbyIdWidget,
           Expanded(
             child: ListView.builder(
               itemCount: _players.length,

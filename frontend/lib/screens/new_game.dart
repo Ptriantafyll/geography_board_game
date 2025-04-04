@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geography_board_game/functions/alert.dart';
 import 'package:geography_board_game/models/player.dart';
+import 'package:geography_board_game/models/websocket_response.dart';
 import 'package:geography_board_game/providers/player_colors.dart';
 import 'package:geography_board_game/screens/lobby.dart';
 import 'package:geography_board_game/widgets/color_picker.dart';
+import 'package:geography_board_game/providers/websocket_provider.dart';
 
 class NewGameScreen extends ConsumerStatefulWidget {
   const NewGameScreen({super.key});
@@ -20,33 +22,44 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
   int _selectedIndex = 0;
   final _playerNameController = TextEditingController();
   bool _specialPowersSelected = false;
+  // late WebsocketResponse response;
   // final color
 
-  void onCreateLobby() {
+  void _onCreateLobby(response) {
     if (_playerNameController.text.isEmpty) {
       showAlertDialog('Μη έγκυρο όνομα',
           'Παρακαλώ είσάγετε ένα έγκυρο όνομα παίκτη', context);
       return;
     }
 
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (ctx) => LobbyScreen(
-          player: Player(
-            color: _availableColors[_selectedIndex],
-            name: _playerNameController.text,
+    if (response is LobbyCreatedResponse) {
+      final owner = Player(
+        color: _availableColors[_selectedIndex],
+        name: _playerNameController.text,
+      );
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (ctx) => LobbyScreen(
+            lobbyId: response.lobbyId,
+            owner: owner,
+            players: [owner],
           ),
         ),
-      ),
-    );
+      );
+    } else {
+      showAlertDialog(
+        'Κάτι πήγε στραβά',
+        'Λυπούμαστε το δωμάτιο δε δημιουργήθηκε: ${response}. Παρακαλώ προσπαθήστε ξανά',
+        context,
+      );
+      return;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     _availableColors = ref.read(colorsProvider);
-    // final webSocketConnection = ref
-    //     .read(websocketProvider.notifier)
-    //     .connectToWebSocketServer("ws://localhost:8080");
 
     return SafeArea(
       child: Container(
@@ -94,7 +107,18 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
                 ],
               ),
               ElevatedButton(
-                onPressed: onCreateLobby,
+                onPressed: () async {
+                  final response = ref.watch(websocketProvider);
+                  final webSocketNotifier =
+                      ref.read(websocketProvider.notifier);
+                  // todo make those async and await them
+                  await webSocketNotifier.createPlayer(
+                      _playerNameController.text,
+                      _availableColors[_selectedIndex]);
+                  await webSocketNotifier.createLobby();
+
+                  _onCreateLobby(response);
+                },
                 child: const Text('Δημιουργία Δωματίου'),
               )
             ],

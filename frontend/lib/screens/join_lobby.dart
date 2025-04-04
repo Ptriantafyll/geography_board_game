@@ -5,6 +5,8 @@ import 'package:geography_board_game/models/player.dart';
 import 'package:geography_board_game/providers/player_colors.dart';
 import 'package:geography_board_game/screens/lobby.dart';
 import 'package:geography_board_game/widgets/color_picker.dart';
+import 'package:geography_board_game/providers/websocket_provider.dart';
+import 'package:geography_board_game/models/websocket_response.dart';
 
 class JoinLobbyScreen extends ConsumerStatefulWidget {
   const JoinLobbyScreen({super.key});
@@ -17,10 +19,12 @@ class _JoinLobbyScreenState extends ConsumerState<JoinLobbyScreen> {
   List<Color> _availableColors = [];
   int _selectedIndex = 0;
   final _playerNameController = TextEditingController();
-
   final _lobbyIdController = TextEditingController();
 
-  void _onJoinLobby() {
+  void _onJoinLobby() async {
+    final response = ref.watch(websocketProvider);
+    final webSocketNotifier = ref.read(websocketProvider.notifier);
+
     if (_lobbyIdController.text.isEmpty || _playerNameController.text.isEmpty) {
       showAlertDialog(
         'Μη έγκυρα στοιχεία',
@@ -30,18 +34,40 @@ class _JoinLobbyScreenState extends ConsumerState<JoinLobbyScreen> {
       return;
     }
 
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (ctx) => LobbyScreen(
-          player: Player(
-            color: _availableColors[_selectedIndex],
-            name: _playerNameController.text,
+    await webSocketNotifier.createPlayer(
+        _playerNameController.text, _availableColors[_selectedIndex]);
+    await webSocketNotifier.joinLobby(_lobbyIdController.text);
+
+    if (response is PlayerJoinFailedResponse) {
+      showAlertDialog('Μη έγκυρο δωμάτιο', 'Το δωμάτιο δε βρέθηκε', context);
+      return;
+    }
+
+    if (response is PlayerJoinedResponse) {
+      final currentPlayer = Player(
+        color: _availableColors[_selectedIndex],
+        name: _playerNameController.text,
+      );
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (ctx) => LobbyScreen(
+            owner: currentPlayer,
+            players: response.playersInLobby,
+            isJoinLobby: true,
+            lobbyId: _lobbyIdController.text,
           ),
-          isJoinLobby: true,
-          lobbyId: _lobbyIdController.text,
         ),
-      ),
-    );
+      );
+      return;
+    } else {
+      showAlertDialog(
+        'Κάτι πήγε στραβά',
+        'Λυπούμαστε το δωμάτιο δε δημιουργήθηκε, παρακαλώ προσπαθήστε ξανά',
+        context,
+      );
+      return;
+    }
   }
 
   @override
