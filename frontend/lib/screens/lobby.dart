@@ -60,7 +60,6 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
     // delete player when screen is closed
     // ref.read(websocketProvider.notifier).deletePlayer();
     webSocketNotifier.deletePlayer();
-    webSocketNotifier.removePlayers();
     super.dispose();
   }
 
@@ -70,10 +69,10 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
     print("players in build $_players");
 
     if (response is PlayerJoinFailedResponse) {
-      Navigator.of(context).pop();
-      // todo: do this at lobby screen
+      // todo: do this at join screen
       // showAlertDialog('Μη έγκυρο δωμάτιο', 'Το δωμάτιο δε βρέθηκε', context);
       print('player join failed');
+      Navigator.of(context).pop();
     }
 
     if (response is LobbyCreatedResponse) {

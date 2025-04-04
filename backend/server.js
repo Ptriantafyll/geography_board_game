@@ -60,10 +60,6 @@ async function createPlayer(websocket, playerId, data) {
       type: "PLAYER_CREATED",
       playerId: playerId,
     });
-    playerCreatedMessage = JSON.stringify({
-      type: "PLAYER_CREATED",
-      playerId: playerId,
-    });
 
     await pool.query("INSERT INTO Player (id, name, color) VALUES (?, ?, ?)", [
       playerId,
@@ -141,11 +137,13 @@ async function joinLobby(websocket, data, playerId) {
     await websocket.send(playerJoinedMessage);
   } catch (error) {
     // console.error("Error Joining lobby", error);
-    playerJoinedMessage = JSON.stringify({
+    playerJoinFailedMessage = JSON.stringify({
       type: "PLAYER_JOIN_FAILED",
     });
-    console.log("Sending: ", playerJoinedMessage);
-    await websocket.send(playerJoinedMessage);
+    console.log("Sending: ", playerJoinFailedMessage);
+    await pool.query("DELETE FROM Player WHERE id=?", playerId);
+    await websocket.send(playerJoinFailedMessage);
+    return;
   }
 }
 
