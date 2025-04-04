@@ -85,7 +85,7 @@ async function deletePlayer(websocket, playerId) {
     });
 
     await pool.query("DELETE FROM Player WHERE id=?", playerId);
-    await websocket.send(JSON.stringify({ playerDeletedMessage }));
+    await websocket.send(playerDeletedMessage);
     console.log("Deleted player ", playerId);
   } catch (error) {
     console.error("Error deleting Player", error);
