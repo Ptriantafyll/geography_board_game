@@ -5,9 +5,15 @@ const redis = require("./redis");
 
 const wss = new WebSocket.Server({ port: 8080 });
 
+// Map to store clients by player id
+// todo: for now this is stored in memory, later find a better way
+const clients = new Map();
+
 wss.on("connection", async (socket) => {
   console.log("New player connected");
   const playerId = uuidv4();
+  console.log("New Player id: ", playerId);
+  clients.set(playerId, socket);
 
   socket.on("message", async (message) => {
     try {
@@ -128,7 +134,7 @@ async function joinLobby(websocket, data, playerId) {
     );
 
     playersInLobby = await pool.query(
-      "SELECT Player.name, Player.color FROM Player JOIN Lobby_Player ON Player.id = Lobby_Player.player_id JOIN Lobby ON Lobby.id = Lobby_Player.lobby_id WHERE Lobby.id = ?",
+      "SELECT Player.name, Player.color, Player.id FROM Player JOIN Lobby_Player ON Player.id = Lobby_Player.player_id JOIN Lobby ON Lobby.id = Lobby_Player.lobby_id WHERE Lobby.id = ?",
       data.lobbyId
     );
 
@@ -140,10 +146,20 @@ async function joinLobby(websocket, data, playerId) {
     });
 
     console.log("Player ", playerId, " joined lobby ", data.lobbyId);
-    console.log("sent: ", playerJoinedMessage);
-    await websocket.send(playerJoinedMessage);
+    console.log("sending: ", playerJoinedMessage);
+
+    targetIds = new Set(playersInLobby[0].map((player) => player.id));
+    console.log("targetIds: ", targetIds);
+
+    for (const [playerId, socket] of clients.entries()) {
+      console.log("client id: ", playerId);
+      if (targetIds.has(playerId) && socket.readyState === socket.OPEN) {
+        socket.send(playerJoinedMessage);
+      }
+    }
+    // await websocket.send(playerJoinedMessage);
   } catch (error) {
-    // console.error("Error Joining lobby", error);
+    console.error("Error Joining lobby", error);
     playerJoinFailedMessage = JSON.stringify({
       type: "PLAYER_JOIN_FAILED",
       requestId: data.id,
