@@ -77,6 +77,7 @@ class PlayerJoinedResponse extends WebsocketResponse {
         Player(
           name: player['name'],
           color: getColorFromString(player['color'])!,
+          id: player['id'],
         ),
       );
     }

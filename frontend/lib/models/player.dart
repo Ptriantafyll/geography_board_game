@@ -8,6 +8,7 @@ class Player {
     this.score = 0,
     this.blocksReceived = 0,
     this.actionsAvailable = const [],
+    this.id = '',
     // todo: make players choose their names
   });
 
@@ -16,4 +17,5 @@ class Player {
   final int score;
   final int blocksReceived;
   final List<GameAction> actionsAvailable;
+  final String id;
 }
