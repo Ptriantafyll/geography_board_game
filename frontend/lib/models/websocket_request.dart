@@ -4,11 +4,13 @@ import 'package:geography_board_game/functions/colors.dart';
 // CREATE_PLAYER request
 class CreatePlayerRequest {
   const CreatePlayerRequest({
+    required this.id,
     required this.name,
     required this.color,
   });
 
   final String type = 'CREATE_PLAYER';
+  final String id;
   final String name;
   final Color color;
 
@@ -16,6 +18,7 @@ class CreatePlayerRequest {
   Map<String, dynamic> toJson() {
     return {
       'type': type,
+      'id': id,
       'name': name,
       'color': getStringFromColor(color)!.toUpperCase(),
     };
@@ -24,14 +27,16 @@ class CreatePlayerRequest {
 
 // CREATE_LOBBY request
 class CreateLobbyRequest {
-  const CreateLobbyRequest();
+  const CreateLobbyRequest({required this.id});
 
   final String type = 'CREATE_LOBBY';
+  final String id;
 
   // convert CreateLobbyRequest object to JSON
   Map<String, dynamic> toJson() {
     return {
       'type': type,
+      'id': id,
     };
   }
 }
@@ -40,17 +45,16 @@ class CreateLobbyRequest {
 class JoinLobbyRequest {
   const JoinLobbyRequest({
     required this.lobbyId,
+    required this.id,
   });
 
   final String type = 'JOIN_LOBBY';
   final String lobbyId;
+  final String id;
 
   // convert joinLobbyRequest object to JSON
   Map<String, dynamic> toJson() {
-    return {
-      'type': type,
-      'lobbyId': lobbyId,
-    };
+    return {'type': type, 'lobbyId': lobbyId, 'id': id};
   }
 }
 
@@ -58,30 +62,44 @@ class JoinLobbyRequest {
 class DeleteLobbyRequest {
   const DeleteLobbyRequest({
     required this.lobbyId,
+    required this.id,
   });
 
   final String type = 'DELETE_LOBBY';
   final String lobbyId;
+  final String id;
 
   // convert DeleteLobbyRequest object to JSON
   Map<String, dynamic> toJson() {
-    return {
-      'type': type,
-      'lobbyId': lobbyId,
-    };
+    return {'type': type, 'lobbyId': lobbyId, 'id': id};
   }
 }
 
 // DELETE_PLAYER request
 class DeletePlayerRequest {
-  const DeletePlayerRequest();
+  const DeletePlayerRequest({required this.id});
 
   final String type = 'DELETE_PLAYER';
+  final String id;
 
   // convert DeleteLobbyRequest object to JSON
   Map<String, dynamic> toJson() {
     return {
       'type': type,
+      'id': id,
     };
+  }
+}
+
+// PING request
+class PingRequest {
+  const PingRequest({required this.id});
+
+  final String type = 'PING';
+  final String id;
+
+  // convert PingRequest object to JSON
+  Map<String, dynamic> toJson() {
+    return {'type': type, 'id': id};
   }
 }
