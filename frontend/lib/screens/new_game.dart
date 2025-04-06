@@ -22,44 +22,57 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
   int _selectedIndex = 0;
   final _playerNameController = TextEditingController();
   bool _specialPowersSelected = false;
-  // late WebsocketResponse response;
-  // final color
 
-  void _onCreateLobby(response) {
+  Future<bool> _onCreateLobby() async {
     if (_playerNameController.text.isEmpty) {
       showAlertDialog('Μη έγκυρο όνομα',
           'Παρακαλώ είσάγετε ένα έγκυρο όνομα παίκτη', context);
-      return;
+      return false;
     }
 
-    if (response is LobbyCreatedResponse) {
-      final owner = Player(
-        color: _availableColors[_selectedIndex],
-        name: _playerNameController.text,
-      );
+    final webSocketNotifier = ref.read(websocketProvider.notifier);
 
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (ctx) => LobbyScreen(
-            lobbyId: response.lobbyId,
-            owner: owner,
-            players: [owner],
-          ),
-        ),
-      );
-    } else {
-      showAlertDialog(
-        'Κάτι πήγε στραβά',
-        'Λυπούμαστε το δωμάτιο δε δημιουργήθηκε: ${response}. Παρακαλώ προσπαθήστε ξανά',
-        context,
-      );
-      return;
-    }
+    await webSocketNotifier.createPlayer(
+        _playerNameController.text, _availableColors[_selectedIndex]);
+    final lobbyCreated = await webSocketNotifier.createLobby();
+
+    return lobbyCreated;
+
+    // todo check what happens when lobby is not created
+    // } else {
+    //   showAlertDialog(
+    //     'Κάτι πήγε στραβά',
+    //     'Λυπούμαστε το δωμάτιο δε δημιουργήθηκε: ${response}. Παρακαλώ προσπαθήστε ξανά',
+    //     context,
+    //   );
+    // }
   }
 
   @override
   Widget build(BuildContext context) {
     _availableColors = ref.read(colorsProvider);
+    final response = ref.watch(websocketProvider);
+
+    // todo craete lobby failed response
+    if (response is LobbyCreatedResponse) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final owner = Player(
+          color: _availableColors[_selectedIndex],
+          name: _playerNameController.text,
+        );
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (ctx) => LobbyScreen(
+              lobbyId: response.lobbyId,
+              owner: owner,
+              players: [owner],
+            ),
+          ),
+        );
+
+        ref.read(websocketProvider.notifier).reset();
+      });
+    }
 
     return SafeArea(
       child: Container(
@@ -107,18 +120,7 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
                 ],
               ),
               ElevatedButton(
-                onPressed: () async {
-                  final response = ref.watch(websocketProvider);
-                  final webSocketNotifier =
-                      ref.read(websocketProvider.notifier);
-                  // todo make those async and await them
-                  await webSocketNotifier.createPlayer(
-                      _playerNameController.text,
-                      _availableColors[_selectedIndex]);
-                  await webSocketNotifier.createLobby();
-
-                  _onCreateLobby(response);
-                },
+                onPressed: _onCreateLobby,
                 child: const Text('Δημιουργία Δωματίου'),
               )
             ],
