@@ -62,7 +62,6 @@ class _JoinLobbyScreenState extends ConsumerState<JoinLobbyScreen> {
               // todo: make lobby have an owner
               owner: currentPlayer,
               players: response.playersInLobby,
-              isJoinLobby: true,
               lobbyId: _lobbyIdController.text,
             ),
           ),
