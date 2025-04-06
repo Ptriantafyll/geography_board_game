@@ -23,20 +23,18 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
   final _playerNameController = TextEditingController();
   bool _specialPowersSelected = false;
 
-  Future<bool> _onCreateLobby() async {
+  void _onCreateLobby() async {
     if (_playerNameController.text.isEmpty) {
       showAlertDialog('Μη έγκυρο όνομα',
           'Παρακαλώ είσάγετε ένα έγκυρο όνομα παίκτη', context);
-      return false;
+      return;
     }
 
     final webSocketNotifier = ref.read(websocketProvider.notifier);
 
     await webSocketNotifier.createPlayer(
         _playerNameController.text, _availableColors[_selectedIndex]);
-    final lobbyCreated = await webSocketNotifier.createLobby();
-
-    return lobbyCreated;
+    await webSocketNotifier.createLobby();
 
     // todo check what happens when lobby is not created
     // } else {
@@ -53,7 +51,7 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
     _availableColors = ref.read(colorsProvider);
     final response = ref.watch(websocketProvider);
 
-    // todo craete lobby failed response
+    // todo create lobby failed response
     if (response is LobbyCreatedResponse) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final owner = Player(
