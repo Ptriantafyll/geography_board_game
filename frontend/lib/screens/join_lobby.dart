@@ -22,9 +22,6 @@ class _JoinLobbyScreenState extends ConsumerState<JoinLobbyScreen> {
   final _lobbyIdController = TextEditingController();
 
   void _onJoinLobby() async {
-    final response = ref.watch(websocketProvider);
-    final webSocketNotifier = ref.read(websocketProvider.notifier);
-
     if (_lobbyIdController.text.isEmpty || _playerNameController.text.isEmpty) {
       showAlertDialog(
         'Μη έγκυρα στοιχεία',
@@ -34,45 +31,45 @@ class _JoinLobbyScreenState extends ConsumerState<JoinLobbyScreen> {
       return;
     }
 
+    final webSocketNotifier = ref.read(websocketProvider.notifier);
     await webSocketNotifier.createPlayer(
         _playerNameController.text, _availableColors[_selectedIndex]);
     await webSocketNotifier.joinLobby(_lobbyIdController.text);
-
-    if (response is PlayerJoinFailedResponse) {
-      showAlertDialog('Μη έγκυρο δωμάτιο', 'Το δωμάτιο δε βρέθηκε', context);
-      return;
-    }
-
-    if (response is PlayerJoinedResponse) {
-      final currentPlayer = Player(
-        color: _availableColors[_selectedIndex],
-        name: _playerNameController.text,
-      );
-
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (ctx) => LobbyScreen(
-            owner: currentPlayer,
-            players: response.playersInLobby,
-            isJoinLobby: true,
-            lobbyId: _lobbyIdController.text,
-          ),
-        ),
-      );
-      return;
-    } else {
-      showAlertDialog(
-        'Κάτι πήγε στραβά',
-        'Λυπούμαστε το δωμάτιο δε δημιουργήθηκε, παρακαλώ προσπαθήστε ξανά',
-        context,
-      );
-      return;
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     _availableColors = ref.read(colorsProvider);
+    final response = ref.watch(websocketProvider);
+
+    if (response is PlayerJoinFailedResponse) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        showAlertDialog('Μη έγκυρο δωμάτιο', 'Το δωμάτιο δε βρέθηκε', context);
+        ref.read(websocketProvider.notifier).reset();
+      });
+    }
+
+    if (response is PlayerJoinedResponse) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final currentPlayer = Player(
+          color: _availableColors[_selectedIndex],
+          name: _playerNameController.text,
+        );
+
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (ctx) => LobbyScreen(
+              // todo: make lobby have an owner
+              owner: currentPlayer,
+              players: response.playersInLobby,
+              isJoinLobby: true,
+              lobbyId: _lobbyIdController.text,
+            ),
+          ),
+        );
+        ref.read(websocketProvider.notifier).reset();
+      });
+    }
 
     return SafeArea(
       child: Container(

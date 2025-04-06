@@ -136,14 +136,17 @@ async function joinLobby(websocket, data, playerId) {
       type: "PLAYER_JOINED",
       playersInLobby: playersInLobby[0],
       lobbyId: data.lobbyId,
+      requestId: data.id,
     });
 
     console.log("Player ", playerId, " joined lobby ", data.lobbyId);
+    console.log("sent: ", playerJoinedMessage);
     await websocket.send(playerJoinedMessage);
   } catch (error) {
     // console.error("Error Joining lobby", error);
     playerJoinFailedMessage = JSON.stringify({
       type: "PLAYER_JOIN_FAILED",
+      requestId: data.id,
     });
     console.log("Sending: ", playerJoinFailedMessage);
     await pool.query("DELETE FROM Player WHERE id=?", playerId);

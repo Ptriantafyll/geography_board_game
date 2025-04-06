@@ -120,7 +120,6 @@ WebsocketResponse parseWebsocketResponse(String jsonString) {
       return PlayerCreatedResponse.fromJson(json);
     case 'PLAYER_DELETED':
       print(json);
-      print('here');
       return PlayerDeletedResponse.fromJson(json);
     case 'LOBBY_CREATED':
       print(json);
