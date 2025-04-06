@@ -20,7 +20,7 @@ wss.on("connection", async (socket) => {
           break;
         case "CREATE_LOBBY":
           const lobbyId = uuidv4();
-          await createLobby(socket, lobbyId, playerId);
+          await createLobby(socket, lobbyId, playerId, data);
           break;
         case "JOIN_LOBBY":
           await joinLobby(socket, data, playerId);
@@ -29,7 +29,7 @@ wss.on("connection", async (socket) => {
           await deleteLobby(socket, data);
           break;
         case "DELETE_PLAYER":
-          await deletePlayer(socket, playerId);
+          await deletePlayer(socket, playerId, data);
           break;
         default:
           socket.send(
@@ -59,6 +59,7 @@ async function createPlayer(websocket, playerId, data) {
     playerCreatedMessage = JSON.stringify({
       type: "PLAYER_CREATED",
       playerId: playerId,
+      requestId: data.id,
     });
 
     await pool.query("INSERT INTO Player (id, name, color) VALUES (?, ?, ?)", [
@@ -74,25 +75,28 @@ async function createPlayer(websocket, playerId, data) {
 }
 
 // Creates a new player
-async function deletePlayer(websocket, playerId) {
+async function deletePlayer(websocket, playerId, data) {
   try {
     playerDeletedMessage = JSON.stringify({
       type: "PLAYER_DELETED",
+      requestId: data.id,
     });
 
     await pool.query("DELETE FROM Player WHERE id=?", playerId);
     await websocket.send(playerDeletedMessage);
     console.log("Deleted player ", playerId);
+    console.log("Sent ", playerDeletedMessage);
   } catch (error) {
     console.error("Error deleting Player", error);
   }
 }
 
 // Creates a new lobby
-async function createLobby(websocket, lobbyId, playerId) {
+async function createLobby(websocket, lobbyId, playerId, data) {
   lobbyCreatedMessage = JSON.stringify({
     type: "LOBBY_CREATED",
     lobbyId: lobbyId,
+    requestId: data.id,
   });
 
   try {
@@ -104,6 +108,7 @@ async function createLobby(websocket, lobbyId, playerId) {
         [lobbyId, playerId]
       );
       console.log("Player ", playerId, " joined lobby ", lobbyId);
+      console.log("send ", lobbyCreatedMessage);
     } catch (error) {
       console.error("Error Joining lobby", error);
     }
