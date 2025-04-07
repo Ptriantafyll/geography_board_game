@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geography_board_game/models/player.dart';
+import 'package:geography_board_game/models/websocket_response.dart';
 import 'package:geography_board_game/providers/websocket_provider.dart';
 import 'package:geography_board_game/widgets/player_item.dart';
 
@@ -10,12 +11,10 @@ class LobbyScreen extends ConsumerStatefulWidget {
     required this.owner,
     required this.players,
     required this.lobbyId,
-    this.isJoinLobby = false,
   });
 
   final Player owner;
   final List<Player> players;
-  final bool isJoinLobby;
   final String lobbyId;
 
   @override
@@ -44,6 +43,33 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
   Widget build(BuildContext context) {
     _players = widget.players;
     final lobbyIdWidget = Text('Lobby id: ${widget.lobbyId}');
+    final response = ref.watch(websocketProvider);
+
+    if (response is PlayerJoinedResponse) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        String newPlayerName;
+        Color newPlayerColor;
+
+        for (var newPlayer in response.playersInLobby) {
+          if (!widget.players.any((player) => player.id == newPlayer.id)) {
+            newPlayerColor = newPlayer.color;
+            newPlayerName = newPlayer.name;
+            break;
+          }
+        }
+
+        final newPlayer = Player(
+          color: response.playersInLobby[0].color,
+          name: response.playersInLobby[0].name,
+        );
+
+        setState(() {
+          widget.players.add(newPlayer);
+        });
+
+        ref.read(websocketProvider.notifier).reset();
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(
