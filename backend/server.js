@@ -154,7 +154,7 @@ async function joinLobby(websocket, data, playerId) {
     for (const [playerId, socket] of clients.entries()) {
       console.log("client id: ", playerId);
       if (targetIds.has(playerId) && socket.readyState === socket.OPEN) {
-        socket.send(playerJoinedMessage);
+        await socket.send(playerJoinedMessage);
       }
     }
     // await websocket.send(playerJoinedMessage);
