@@ -88,6 +88,7 @@ async function deletePlayer(websocket, playerId, data) {
       requestId: data.id,
     });
 
+    // get the lobby (if any) that the player was in before deleting the player
     let lobbyResult = await pool.query(
       "SELECT lobby_id FROM Lobby_Player WHERE player_id =?",
       playerId
