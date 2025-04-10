@@ -88,10 +88,35 @@ async function deletePlayer(websocket, playerId, data) {
       requestId: data.id,
     });
 
+    let lobbyResult = await pool.query(
+      "SELECT lobby_id FROM Lobby_Player WHERE player_id =?",
+      playerId
+    );
+
+    let lobbyId = "";
+    if (lobbyResult[0].length !== 0) {
+      lobbyId = lobbyResult[0][0]["lobby_id"];
+    }
+
     await pool.query("DELETE FROM Player WHERE id=?", playerId);
     await websocket.send(playerDeletedMessage);
     console.log("Deleted player ", playerId);
     console.log("Sent ", playerDeletedMessage);
+
+    if (lobbyId === "") {
+      console.log("Player had not joined any lobbies");
+      return;
+    }
+
+    let playersResult = await pool.query(
+      "SELECT * FROM Lobby_Player WHERE lobby_id =?",
+      lobbyId
+    );
+    console.log("Players in ", lobbyId, ": ", playersResult);
+    console.log("array is empty? ", playersResult[0].length === 0);
+    if (playersResult[0].length === 0 && lobbyId !== "") {
+      await deleteLobby(lobbyId);
+    }
   } catch (error) {
     console.error("Error deleting Player", error);
   }
@@ -99,7 +124,7 @@ async function deletePlayer(websocket, playerId, data) {
 
 // Creates a new lobby
 async function createLobby(websocket, lobbyId, playerId, data) {
-  lobbyCreatedMessage = JSON.stringify({
+  let lobbyCreatedMessage = JSON.stringify({
     type: "LOBBY_CREATED",
     lobbyId: lobbyId,
     requestId: data.id,
@@ -133,14 +158,16 @@ async function joinLobby(websocket, data, playerId) {
       [data.lobbyId, playerId]
     );
 
-    playersInLobby = await pool.query(
+    let playersInLobbyResult = await pool.query(
       "SELECT Player.name, Player.color, Player.id FROM Player JOIN Lobby_Player ON Player.id = Lobby_Player.player_id JOIN Lobby ON Lobby.id = Lobby_Player.lobby_id WHERE Lobby.id = ?",
       data.lobbyId
     );
 
-    playerJoinedMessage = JSON.stringify({
+    let playersInLobby = playersInLobbyResult[0];
+
+    let playerJoinedMessage = JSON.stringify({
       type: "PLAYER_JOINED",
-      playersInLobby: playersInLobby[0],
+      playersInLobby: playersInLobby,
       lobbyId: data.lobbyId,
       requestId: data.id,
     });
@@ -148,7 +175,7 @@ async function joinLobby(websocket, data, playerId) {
     console.log("Player ", playerId, " joined lobby ", data.lobbyId);
     console.log("sending: ", playerJoinedMessage);
 
-    targetIds = new Set(playersInLobby[0].map((player) => player.id));
+    let targetIds = new Set(playersInLobby.map((player) => player.id));
     console.log("targetIds: ", targetIds);
 
     for (const [playerId, socket] of clients.entries()) {
@@ -160,7 +187,7 @@ async function joinLobby(websocket, data, playerId) {
     // await websocket.send(playerJoinedMessage);
   } catch (error) {
     console.error("Error Joining lobby", error);
-    playerJoinFailedMessage = JSON.stringify({
+    let playerJoinFailedMessage = JSON.stringify({
       type: "PLAYER_JOIN_FAILED",
       requestId: data.id,
     });
@@ -172,4 +199,11 @@ async function joinLobby(websocket, data, playerId) {
 }
 
 // Lobby deleted when all players have left
-async function deleteLobby(websocket, data) {}
+async function deleteLobby(lobbyId) {
+  try {
+    await pool.query("DELETE FROM Lobby WHERE id =?", lobbyId);
+    console.log("Deleted lobby: ", lobbyId);
+  } catch (error) {
+    console.log("Erorr deleting lobby: ", error);
+  }
+}
