@@ -119,7 +119,7 @@ async function deletePlayer(websocket, playerId, data) {
     console.log("Players in ", lobbyId, ": ", playersResult);
     console.log("array is empty? ", playersResult[0].length === 0);
     if (playersResult[0].length === 0 && lobbyId !== "") {
-      await deleteLobby(lobbyId);
+      await deleteLobby(websocket, lobbyId);
     }
   } catch (error) {
     console.error("Error deleting Player", error);
@@ -227,6 +227,12 @@ async function leaveLobby(websocket, playerId, data) {
 
     console.log("Players in lobby: ", playersInLobby);
 
+    if (playersInLobby.length === 0) {
+      console.log("No players in lobby, now deleting");
+      await deleteLobby(websocket, data.lobbyId);
+      return;
+    }
+
     let targetIds = new Set(playersInLobby.map((player) => player.id));
     console.log("targetIds: ", targetIds);
 
@@ -250,7 +256,7 @@ async function leaveLobby(websocket, playerId, data) {
 }
 
 // Lobby deleted when all players have left
-async function deleteLobby(lobbyId) {
+async function deleteLobby(websocket, lobbyId) {
   try {
     await pool.query("DELETE FROM Lobby WHERE id =?", lobbyId);
     console.log("Deleted lobby: ", lobbyId);
