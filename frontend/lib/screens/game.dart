@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:geography_board_game/models/player.dart';
+import 'package:geography_board_game/widgets/player_item.dart';
 
 class GameScreen extends StatefulWidget {
-  const GameScreen({super.key, required this.gameId});
+  const GameScreen({super.key, required this.gameId, required this.players});
 
   final String gameId;
+  final List<Player> players;
 
   @override
   State<StatefulWidget> createState() => _GameScreenState();
@@ -12,7 +15,6 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Scaffold(
       appBar: AppBar(
         // backgroundColor: Theme.of(context).colorScheme.primary,
@@ -25,7 +27,19 @@ class _GameScreenState extends State<GameScreen> {
         ),
       ),
       body: Column(
-        children: [Text('Game ID: ${widget.gameId}')],
+        children: [
+          Text('Game ID: ${widget.gameId}'),
+          Expanded(
+            // todo: add scores
+            child: ListView.builder(
+              itemCount: widget.players.length,
+              itemBuilder: (ctx, index) => PlayerItem(
+                player: widget.players[index],
+                isGame: true,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

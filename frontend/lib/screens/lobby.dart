@@ -24,7 +24,6 @@ class LobbyScreen extends ConsumerStatefulWidget {
 
 class _LobbyScreenState extends ConsumerState<LobbyScreen> {
   late WebsocketNotifier webSocketNotifier;
-  List<Player> _players = [];
 
   @override
   void initState() {
@@ -55,7 +54,6 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    _players = widget.players;
     final lobbyIdWidget = Text('Lobby id: ${widget.lobbyId}');
     final response = ref.watch(websocketProvider);
 
@@ -90,6 +88,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
           MaterialPageRoute(
             builder: (ctx) => GameScreen(
               gameId: response.gameId,
+              players: widget.players,
             ),
           ),
         );
@@ -114,9 +113,10 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
           lobbyIdWidget,
           Expanded(
             child: ListView.builder(
-              itemCount: _players.length,
+              itemCount: widget.players.length,
               itemBuilder: (ctx, index) => PlayerItem(
-                player: _players[index],
+                player: widget.players[index],
+                isGame: false,
               ),
             ),
           ),
