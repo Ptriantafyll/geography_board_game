@@ -54,7 +54,11 @@ class JoinLobbyRequest {
 
   // convert joinLobbyRequest object to JSON
   Map<String, dynamic> toJson() {
-    return {'type': type, 'lobbyId': lobbyId, 'id': id};
+    return {
+      'type': type,
+      'lobbyId': lobbyId,
+      'id': id,
+    };
   }
 }
 
@@ -71,7 +75,32 @@ class DeleteLobbyRequest {
 
   // convert DeleteLobbyRequest object to JSON
   Map<String, dynamic> toJson() {
-    return {'type': type, 'lobbyId': lobbyId, 'id': id};
+    return {
+      'type': type,
+      'lobbyId': lobbyId,
+      'id': id,
+    };
+  }
+}
+
+// LEAVE_LOBBY request
+class LeaveLobbyRequest {
+  const LeaveLobbyRequest({
+    required this.lobbyId,
+    required this.id,
+  });
+
+  final String type = 'LEAVE_LOBBY';
+  final String lobbyId;
+  final String id;
+
+  // convert LeaveLobbyRequest object to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'type': type,
+      'lobbyId': lobbyId,
+      'id': id,
+    };
   }
 }
 

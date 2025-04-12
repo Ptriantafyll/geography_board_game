@@ -57,17 +57,41 @@ class LobbyCreatedResponse extends WebsocketResponse {
   }
 }
 
+class LeftLobbyResponse extends WebsocketResponse {
+  const LeftLobbyResponse({
+    required this.lobbyId,
+    required this.requestId,
+    required this.playerId,
+  }) : super(type: 'LEFT_LOBBY');
+
+  final String lobbyId;
+  final String playerId;
+  @override
+  final String requestId;
+
+  // convert JSON to LeftLobbyResponse object
+  factory LeftLobbyResponse.fromJson(Map<String, dynamic> json) {
+    return LeftLobbyResponse(
+      lobbyId: json['lobbyId'],
+      requestId: json['requestId'],
+      playerId: json['playerId'],
+    );
+  }
+}
+
 class PlayerJoinedResponse extends WebsocketResponse {
-  const PlayerJoinedResponse(
-      {required this.playersInLobby,
-      required this.lobbyId,
-      required this.requestId})
-      : super(type: 'PLAYER_JOINED');
+  const PlayerJoinedResponse({
+    required this.playersInLobby,
+    required this.lobbyId,
+    required this.requestId,
+    required this.newPlayerId,
+  }) : super(type: 'PLAYER_JOINED');
 
   final List<Player> playersInLobby;
   final String lobbyId;
   @override
   final String requestId;
+  final String newPlayerId;
 
   // convert JSON to PlayerJoinedResponse
   factory PlayerJoinedResponse.fromJson(Map<String, dynamic> json) {
@@ -85,6 +109,7 @@ class PlayerJoinedResponse extends WebsocketResponse {
       playersInLobby: playersInLobby,
       lobbyId: json['lobbyId'],
       requestId: json['requestId'],
+      newPlayerId: json['newPlayerId'],
     );
   }
 }
@@ -128,6 +153,9 @@ WebsocketResponse parseWebsocketResponse(String jsonString) {
     case 'PLAYER_JOINED':
       print(json);
       return PlayerJoinedResponse.fromJson(json);
+    case 'LEFT_LOBBY':
+      print(json);
+      return LeftLobbyResponse.fromJson(json);
     case 'PLAYER_JOIN_FAILED':
       print(json);
       return PlayerJoinFailedResponse.fromJson(json);
