@@ -32,6 +32,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketResponse?> {
     try {
       print("Received $message");
       final parsedResponse = parseWebsocketResponse(message);
+      print("Parsed response:  $parsedResponse");
       state = parsedResponse;
       final requestId = parsedResponse.requestId;
       if (_pendingRequests.containsKey(requestId)) {
@@ -123,6 +124,23 @@ class WebsocketNotifier extends StateNotifier<WebsocketResponse?> {
 
     final joinLobbyRequest = JoinLobbyRequest(lobbyId: lobbyId, id: requestId);
     _channel.sink.add(jsonEncode(joinLobbyRequest.toJson()));
+
+    return completer.future.timeout(const Duration(seconds: 10), onTimeout: () {
+      _pendingRequests.remove(requestId);
+      throw TimeoutException('Request timed out');
+    });
+  }
+
+  Future<bool> leaveLobby(lobbyId) {
+    final requestId = uuid.v4();
+    final completer = Completer<bool>();
+    _pendingRequests[requestId] = completer;
+
+    final leaveLobbyRequest = LeaveLobbyRequest(
+      lobbyId: lobbyId,
+      id: requestId,
+    );
+    _channel.sink.add(jsonEncode(leaveLobbyRequest.toJson()));
 
     return completer.future.timeout(const Duration(seconds: 10), onTimeout: () {
       _pendingRequests.remove(requestId);
