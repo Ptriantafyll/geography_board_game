@@ -40,6 +40,9 @@ wss.on("connection", async (socket) => {
         case "DELETE_PLAYER":
           await deletePlayer(socket, playerId, data);
           break;
+        case "START_GAME":
+          await startGame(socket, data);
+          break;
         default:
           socket.send(
             JSON.stringify({ type: "ERROR", message: "Unknown action" })
@@ -53,7 +56,7 @@ wss.on("connection", async (socket) => {
   });
 
   socket.on("close", async () => {
-    await deletePlayer(socket, playerId);
+    await deletePlayer(socket, playerId, { id: "123" });
     console.log(`Player ${playerId} disconnected`);
   });
 });
@@ -185,10 +188,10 @@ async function joinLobby(websocket, data, playerId) {
     let targetIds = new Set(playersInLobby.map((player) => player.id));
     console.log("targetIds: ", targetIds);
 
-    for (const [playerId, socket] of clients.entries()) {
+    for (const [playerId, websocket] of clients.entries()) {
       console.log("client id: ", playerId);
-      if (targetIds.has(playerId) && socket.readyState === socket.OPEN) {
-        await socket.send(playerJoinedMessage);
+      if (targetIds.has(playerId) && websocket.readyState === websocket.OPEN) {
+        await websocket.send(playerJoinedMessage);
       }
     }
     // await websocket.send(playerJoinedMessage);
@@ -244,10 +247,10 @@ async function leaveLobby(websocket, playerId, data) {
     });
 
     // send the message to all players  still in the lobby that a player has left
-    for (const [playerId, socket] of clients.entries()) {
+    for (const [playerId, websocket] of clients.entries()) {
       console.log("client id: ", playerId);
-      if (targetIds.has(playerId) && socket.readyState === socket.OPEN) {
-        await socket.send(playerLeftLobbyMessage);
+      if (targetIds.has(playerId) && websocket.readyState === websocket.OPEN) {
+        await websocket.send(playerLeftLobbyMessage);
       }
     }
   } catch (error) {
@@ -262,5 +265,43 @@ async function deleteLobby(websocket, lobbyId) {
     console.log("Deleted lobby: ", lobbyId);
   } catch (error) {
     console.log("Erorr deleting lobby: ", error);
+  }
+}
+
+// Start game
+async function startGame(websocket, data) {
+  let gameId = uuidv4();
+  try {
+    await pool.query("INSERT INTO Game (id) VALUES (?)", gameId);
+
+    let playersInLobbyResult = await pool.query(
+      "SELECT Player.name, Player.color, Player.id FROM Player " +
+        "JOIN Lobby_Player ON Player.id = Lobby_Player.player_id " +
+        "JOIN Lobby ON Lobby.id = Lobby_Player.lobby_id WHERE Lobby.id =?",
+      data.lobbyId
+    );
+
+    playersInLobby = playersInLobbyResult[0];
+
+    let gameStartedMessage = JSON.stringify({
+      type: "GAME_STARTED",
+      playersInGame: playersInLobby,
+      gameId: gameId,
+      requestId: data.id,
+    });
+
+    let targetIds = new Set(playersInLobby.map((player) => player.id));
+    console.log("targetIds: ", targetIds);
+
+    for (const [playerId, websocket] of clients.entries()) {
+      console.log("client id: ", playerId);
+      if (targetIds.has(playerId) && websocket.readyState === websocket.OPEN) {
+        await websocket.send(gameStartedMessage);
+      }
+    }
+
+    console.log("sent: ", gameStartedMessage);
+  } catch (error) {
+    console.log("Error starting game: ", error);
   }
 }
