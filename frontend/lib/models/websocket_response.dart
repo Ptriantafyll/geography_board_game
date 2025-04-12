@@ -82,31 +82,17 @@ class LeftLobbyResponse extends WebsocketResponse {
 class GameStartedResponse extends WebsocketResponse {
   const GameStartedResponse({
     required this.requestId,
-    required this.playersInGame,
     required this.gameId,
   }) : super(type: 'GAME_STARTED');
 
-  final List<Player> playersInGame;
   @override
   final String requestId;
   final String gameId;
 
   // convert JSON to GameStartedResponse object
   factory GameStartedResponse.fromJson(Map<String, dynamic> json) {
-    List<Player> playersInGame = [];
-    for (Map player in json['playersInGame']) {
-      playersInGame.add(
-        Player(
-          name: player['name'],
-          color: getColorFromString(player['color'])!,
-          id: player['id'],
-        ),
-      );
-    }
-
     return GameStartedResponse(
       requestId: json['requestId'],
-      playersInGame: playersInGame,
       gameId: json['gameId'],
     );
   }
