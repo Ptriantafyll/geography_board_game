@@ -99,6 +99,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        // todo: add actions for QR scan?
         // backgroundColor: Theme.of(context).colorScheme.primary,
         backgroundColor: Colors.cyan,
         title: Center(
