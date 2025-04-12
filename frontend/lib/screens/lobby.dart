@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geography_board_game/models/player.dart';
 import 'package:geography_board_game/models/websocket_response.dart';
 import 'package:geography_board_game/providers/websocket_provider.dart';
+import 'package:geography_board_game/screens/game.dart';
 import 'package:geography_board_game/widgets/player_item.dart';
 
 class LobbyScreen extends ConsumerStatefulWidget {
@@ -41,6 +42,17 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
     super.dispose();
   }
 
+  void _startGame() {
+    webSocketNotifier.startGame(widget.lobbyId);
+
+    // todo: send this to all players in the lobby
+    // Navigator.of(context).push(
+    //   MaterialPageRoute(
+    //     builder: (ctx) => GameScreen(),
+    //   ),
+    // );
+  }
+
   @override
   Widget build(BuildContext context) {
     _players = widget.players;
@@ -72,6 +84,20 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
       });
     }
 
+    if (response is GameStartedResponse) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (ctx) => GameScreen(
+              gameId: response.gameId,
+            ),
+          ),
+        );
+
+        ref.read(websocketProvider.notifier).reset();
+      });
+    }
+
     return Scaffold(
       appBar: AppBar(
         // backgroundColor: Theme.of(context).colorScheme.primary,
@@ -97,7 +123,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
         ],
       ),
       floatingActionButton: ElevatedButton(
-        onPressed: () {},
+        onPressed: _startGame,
         child: Text('Εκκίνηση παιχνιδιού'),
       ),
     );
