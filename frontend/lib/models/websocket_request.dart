@@ -104,6 +104,27 @@ class LeaveLobbyRequest {
   }
 }
 
+// START_GAME request
+class StartGameRequest {
+  const StartGameRequest({
+    required this.lobbyId,
+    required this.id,
+  });
+
+  final String type = 'START_GAME';
+  final String lobbyId;
+  final String id;
+
+  // convert StartGameRequest object to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'type': type,
+      'lobbyId': lobbyId,
+      'id': id,
+    };
+  }
+}
+
 // DELETE_PLAYER request
 class DeletePlayerRequest {
   const DeletePlayerRequest({required this.id});
