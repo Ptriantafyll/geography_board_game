@@ -301,6 +301,7 @@ async function startGame(websocket, data) {
     }
 
     console.log("sent: ", gameStartedMessage);
+    // todo: create scores in redis
   } catch (error) {
     console.log("Error starting game: ", error);
   }
