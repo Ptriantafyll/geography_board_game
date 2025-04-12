@@ -5,9 +5,11 @@ class PlayerItem extends StatelessWidget {
   const PlayerItem({
     super.key,
     required this.player,
+    required this.isGame,
   });
 
   final Player player;
+  final bool isGame;
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +33,8 @@ class PlayerItem extends StatelessWidget {
             player.name,
             style: Theme.of(context).textTheme.titleLarge,
           ),
+          const SizedBox(width: 10),
+          isGame ? Text('Score: ${player.score}') : Text('')
         ],
       ),
     );
