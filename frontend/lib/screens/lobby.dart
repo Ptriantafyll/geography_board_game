@@ -34,6 +34,8 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
   @override
   void dispose() async {
     // todo: maybe leave lobby instead of deleting and creating player when starting the app
+    // leave lobby when scren is closed
+    webSocketNotifier.leaveLobby(widget.lobbyId);
     // delete player when screen is closed
     webSocketNotifier.deletePlayer();
     super.dispose();
@@ -47,24 +49,23 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
 
     if (response is PlayerJoinedResponse) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        String newPlayerName;
-        Color newPlayerColor;
-
-        for (var newPlayer in response.playersInLobby) {
-          if (!widget.players.any((player) => player.id == newPlayer.id)) {
-            newPlayerColor = newPlayer.color;
-            newPlayerName = newPlayer.name;
-            break;
-          }
-        }
-
-        final newPlayer = Player(
-          color: response.playersInLobby[0].color,
-          name: response.playersInLobby[0].name,
-        );
+        final newPlayer = response.playersInLobby
+            .firstWhere((player) => player.id == response.newPlayerId);
 
         setState(() {
           widget.players.add(newPlayer);
+        });
+
+        ref.read(websocketProvider.notifier).reset();
+      });
+    }
+
+    if (response is LeftLobbyResponse) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        //todo: test that this works by leaving with postman
+        setState(() {
+          widget.players
+              .removeWhere((player) => player.id == response.playerId);
         });
 
         ref.read(websocketProvider.notifier).reset();
