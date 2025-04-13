@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class QuestionCard extends StatelessWidget {
   const QuestionCard({
     super.key,
+    // todo: use GameQuestion model
     required this.questions,
     required this.answers,
   });
