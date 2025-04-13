@@ -34,7 +34,7 @@ class PlayerItem extends StatelessWidget {
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(width: 10),
-          isGame ? Text('Score: ${player.score}') : Text('')
+          isGame ? Text('Score: ${player.score}') : Text(''),
         ],
       ),
     );
