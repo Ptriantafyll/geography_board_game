@@ -270,8 +270,8 @@ async function deleteLobby(websocket, lobbyId) {
 
 // Start game
 async function startGame(websocket, data) {
-  let gameId = uuidv4();
   try {
+    let gameId = uuidv4();
     await pool.query("INSERT INTO Game (id) VALUES (?)", gameId);
 
     let playersInLobbyResult = await pool.query(
@@ -281,11 +281,22 @@ async function startGame(websocket, data) {
       data.lobbyId
     );
 
-    playersInLobby = playersInLobbyResult[0];
+    let playersInLobby = playersInLobbyResult[0];
+    console.log("players in lobby: ", playersInLobby);
+
+    for (player of playersInLobby) {
+      console.log("player: ", player);
+      await pool.query(
+        "INSERT INTO Game_Player (game_id, player_id) VALUES (?,?)",
+        [gameId, player.id]
+      );
+      redis.hset(`game:${gameId}:scores`, player.id, 0);
+      // creates scores in redis
+      console.log("set score 0 for plaer: ", player.id);
+    }
 
     let gameStartedMessage = JSON.stringify({
       type: "GAME_STARTED",
-      playersInGame: playersInLobby,
       gameId: gameId,
       requestId: data.id,
     });
@@ -293,6 +304,8 @@ async function startGame(websocket, data) {
     let targetIds = new Set(playersInLobby.map((player) => player.id));
     console.log("targetIds: ", targetIds);
 
+    // todo: make this a function (broadcast?) that takes a lobby/game id
+    // todo: and sends a message to all players
     for (const [playerId, websocket] of clients.entries()) {
       console.log("client id: ", playerId);
       if (targetIds.has(playerId) && websocket.readyState === websocket.OPEN) {
@@ -301,7 +314,6 @@ async function startGame(websocket, data) {
     }
 
     console.log("sent: ", gameStartedMessage);
-    // todo: create scores in redis
   } catch (error) {
     console.log("Error starting game: ", error);
   }
