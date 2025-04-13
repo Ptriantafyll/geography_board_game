@@ -1,4 +1,4 @@
-final dummy_questions = [
+final List<Map<String, Object>> dummy_questions = [
   {
     "question": "How tall is mount everest? (in meters)",
     "answer": 8849,
