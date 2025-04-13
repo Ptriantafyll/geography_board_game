@@ -25,11 +25,12 @@ class _GameScreenState extends State<GameScreen> {
   bool answerSubmitted = false;
   bool showingAnswers = false;
 
-  void showQuestion() {
+  void handleQuestion() {
     // todo: get a random question from the db
     print(_questionController.text);
 
     if (showingScores) {
+      // todo: send websocket request to get scores from redis
       showingScores = false;
       showingQuestion = true;
       answerSubmitted = false;
@@ -147,11 +148,11 @@ class _GameScreenState extends State<GameScreen> {
       ),
       body: content,
       floatingActionButton: ElevatedButton(
-        onPressed: showQuestion,
+        onPressed: handleQuestion,
         child: showingScores
             ? const Text('Next Question')
-            : showingQuestion
-                ? const Text('Show Answers')
+            : showingQuestion || answerSubmitted
+                ? const Text('')
                 : const Text('Show Scores'),
       ),
     );

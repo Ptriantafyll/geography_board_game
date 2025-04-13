@@ -16,6 +16,7 @@ class QuestionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       shadowColor: Colors.black,
+      // todo: make card prettier
       child: Container(
         height: 250,
         width: 250,
