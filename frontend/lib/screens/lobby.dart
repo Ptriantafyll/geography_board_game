@@ -43,13 +43,6 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
 
   void _startGame() {
     webSocketNotifier.startGame(widget.lobbyId);
-
-    // todo: send this to all players in the lobby
-    // Navigator.of(context).push(
-    //   MaterialPageRoute(
-    //     builder: (ctx) => GameScreen(),
-    //   ),
-    // );
   }
 
   @override
@@ -72,7 +65,6 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
 
     if (response is LeftLobbyResponse) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        //todo: test that this works by leaving with postman
         setState(() {
           widget.players
               .removeWhere((player) => player.id == response.playerId);
@@ -84,6 +76,8 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
 
     if (response is GameStartedResponse) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        // todo: replace with pushReplacement after adding player to be on app level
+        // todo: add rejoin functionality
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (ctx) => GameScreen(
