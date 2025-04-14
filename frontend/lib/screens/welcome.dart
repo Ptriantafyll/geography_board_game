@@ -5,6 +5,8 @@ import 'package:geography_board_game/screens/new_game.dart';
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
+  // todo: create player here and keep it live until the app is closed
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
