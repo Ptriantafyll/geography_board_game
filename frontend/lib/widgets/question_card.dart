@@ -7,10 +7,12 @@ class QuestionCard extends StatelessWidget {
     // todo: use GameQuestion model
     required this.gameQuestion,
     required this.questionController,
+    required this.onSubmitAnswer,
   });
 
   final GameQuestion gameQuestion;
   final TextEditingController questionController;
+  final Function onSubmitAnswer;
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +39,12 @@ class QuestionCard extends StatelessWidget {
                 ),
               ),
             ),
-            // todo: add submit button that sends websocket request to answer question
+            ElevatedButton(
+              onPressed: () {
+                onSubmitAnswer();
+              },
+              child: Text('Submit'),
+            )
           ],
         ),
       ),
