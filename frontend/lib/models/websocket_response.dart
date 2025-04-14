@@ -194,6 +194,9 @@ WebsocketResponse parseWebsocketResponse(String jsonString) {
     case 'GAME_STARTED':
       print(json);
       return GameStartedResponse.fromJson(json);
+    case 'ANSWER_SUBMITTED':
+      print(json);
+      return AnswerSubmittedResponse.fromJson(json);
     case 'PONG':
       print(json);
       return PongResponse.fromJson(json);
