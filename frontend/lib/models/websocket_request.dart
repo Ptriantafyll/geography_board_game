@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:geography_board_game/functions/colors.dart';
 
+// todo: separate requests into files
+
 // CREATE_PLAYER request
 class CreatePlayerRequest {
   const CreatePlayerRequest({
@@ -137,6 +139,24 @@ class DeletePlayerRequest {
     return {
       'type': type,
       'id': id,
+    };
+  }
+}
+
+// SUBMIT_ANSWER request
+class SubmitAnswerRequest {
+  const SubmitAnswerRequest({required this.id, required this.answer});
+
+  final String type = 'SUBMIT_ANSWER';
+  final double answer;
+  final String id;
+
+  // convert DeleteLobbyRequest object to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'type': type,
+      'id': id,
+      'answer': answer,
     };
   }
 }

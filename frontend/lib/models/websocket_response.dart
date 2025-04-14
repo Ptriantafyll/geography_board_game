@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:geography_board_game/functions/colors.dart';
 import 'package:geography_board_game/models/player.dart';
 
+// todo: make this abstract and separate the responses into files
 // Defines abstract class for the responses of the websocket connection
 sealed class WebsocketResponse {
   final String type;
@@ -142,6 +143,18 @@ class PlayerJoinFailedResponse extends WebsocketResponse {
 
   factory PlayerJoinFailedResponse.fromJson(Map<String, dynamic> json) {
     return PlayerJoinFailedResponse(requestId: json['requestId']);
+  }
+}
+
+class AnswerSubmittedResponse extends WebsocketResponse {
+  const AnswerSubmittedResponse({required this.requestId})
+      : super(type: 'ANSWER_SUBMITTED');
+
+  @override
+  final String requestId;
+
+  factory AnswerSubmittedResponse.fromJson(Map<String, dynamic> json) {
+    return AnswerSubmittedResponse(requestId: json['requestId']);
   }
 }
 
