@@ -43,6 +43,9 @@ wss.on("connection", async (socket) => {
         case "START_GAME":
           await startGame(socket, data);
           break;
+        case "SUBMIT_ANSWER":
+          await submitAnswer(socket, playerId, data);
+          break;
         default:
           socket.send(
             JSON.stringify({ type: "ERROR", message: "Unknown action" })
@@ -317,4 +320,67 @@ async function startGame(websocket, data) {
   } catch (error) {
     console.log("Error starting game: ", error);
   }
+}
+
+// submit answer
+async function submitAnswer(websocket, playerId, data) {
+  // 1. get answer
+  let answer = data.answer;
+  let gameId = data.gameId;
+  // store answer into redis
+  await redis.hset(`game:${gameId}:answers`, playerId, answer);
+
+  // 2. get players' answers from redis using gameId
+  let answers = await redis.hgetall(`game:${gameId}:answers`);
+  console.log("answers before delete: ", answers);
+
+  //  i. get players from sql db (Game_Player will need data.gameId)
+  let playersInGameResult = await pool.query(
+    "SELECT Player.name, Player.color, Player.id FROM Player " +
+      "JOIN Game_Player ON Player.id = Game_Player.player_id " +
+      "JOIN Game ON Game.id = Game_Player.game_id WHERE Game.id =?",
+    gameId
+  );
+  let playersInGame = playersInGameResult[0];
+
+  //  ii. create object {} with players
+  let playersAnswers = {};
+  //  iii. "playerID": true/false if answered/not anwered yet (compare with answers from redis)
+  for (let playerInGame of playersInGame) {
+    let playerHasAnswered = playerInGame.id in answers;
+
+    playersAnswers[playerInGame.id] = playerHasAnswered;
+  }
+
+  // 3. respond to player that answered with type "ANSWER_SUBMITTED" and with an array with the players that have answered
+  let playerSubmitAnswerMessage = JSON.stringify({
+    type: "ANSWER_SUBMITTED",
+    playersAnswers: playersAnswers,
+    requestId: data.id,
+  });
+
+  // todo: test this
+  await websocket.send(playerSubmitAnswerMessage);
+
+  // 4. notify all other players that this player has answered
+  let playerAnsweredMessage = JSON.stringify({
+    type: "PLAYER_ANSWERED",
+    playerAnswered: playerId,
+    requestId: data.id,
+  });
+
+  let targetIds = new Set(playersInGame.map((player) => player.id));
+  console.log("targetIds: ", targetIds);
+
+  for (const [player_Id, websocket] of clients.entries()) {
+    if (player_Id === playerId) continue;
+
+    if (targetIds.has(player_Id) && websocket.readyState === websocket.OPEN) {
+      //todo: test this
+      await websocket.send(playerAnsweredMessage);
+    }
+  }
+
+  // todo: clear all answers from redis after all players have submitted
+  // await redis.del(`game:${gameId}:answers`);
 }
