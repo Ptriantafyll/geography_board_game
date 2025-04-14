@@ -145,10 +145,15 @@ class DeletePlayerRequest {
 
 // SUBMIT_ANSWER request
 class SubmitAnswerRequest {
-  const SubmitAnswerRequest({required this.id, required this.answer});
+  const SubmitAnswerRequest({
+    required this.id,
+    required this.answer,
+    required this.gameId,
+  });
 
   final String type = 'SUBMIT_ANSWER';
   final double answer;
+  final String gameId;
   final String id;
 
   // convert DeleteLobbyRequest object to JSON
@@ -157,6 +162,7 @@ class SubmitAnswerRequest {
       'type': type,
       'id': id,
       'answer': answer,
+      'gameId': gameId,
     };
   }
 }

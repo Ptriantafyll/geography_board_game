@@ -158,6 +158,18 @@ class AnswerSubmittedResponse extends WebsocketResponse {
   }
 }
 
+class PlayerAnsweredResponse extends WebsocketResponse {
+  const PlayerAnsweredResponse({required this.requestId})
+      : super(type: 'ANSWER_SUBMITTED');
+
+  @override
+  final String requestId;
+
+  factory PlayerAnsweredResponse.fromJson(Map<String, dynamic> json) {
+    return PlayerAnsweredResponse(requestId: json['requestId']);
+  }
+}
+
 class PongResponse extends WebsocketResponse {
   const PongResponse({required this.requestId}) : super(type: 'PONG');
   @override
@@ -197,6 +209,9 @@ WebsocketResponse parseWebsocketResponse(String jsonString) {
     case 'ANSWER_SUBMITTED':
       print(json);
       return AnswerSubmittedResponse.fromJson(json);
+    case 'PLAYER_ANSWERED':
+      print(json);
+      return PlayerAnsweredResponse.fromJson(json);
     case 'PONG':
       print(json);
       return PongResponse.fromJson(json);
