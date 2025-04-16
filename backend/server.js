@@ -40,6 +40,9 @@ wss.on("connection", async (socket) => {
         case "DELETE_PLAYER":
           await deletePlayer(socket, playerId, data);
           break;
+        case "SHOW_QUESTION":
+          await showQuestion(socket, data);
+          break;
         case "START_GAME":
           await startGame(socket, data);
           break;
@@ -361,6 +364,7 @@ async function submitAnswer(websocket, playerId, data) {
 
   // todo: test this
   await websocket.send(playerSubmitAnswerMessage);
+  console.log("sent: ", playerSubmitAnswerMessage);
 
   // 4. notify all other players that this player has answered
   let playerAnsweredMessage = JSON.stringify({
@@ -383,4 +387,41 @@ async function submitAnswer(websocket, playerId, data) {
 
   // todo: clear all answers from redis after all players have submitted
   // await redis.del(`game:${gameId}:answers`);
+}
+
+async function showQuestion(websocket, data) {
+  let gameId = data.gameId;
+
+  // todo: 1. get a random question
+  let questionToSend = {
+    text: "How tall is mount everest? (in meters)",
+    answer: "8849.0",
+  };
+
+  // 2. get all players in the game
+  let playersInGameResult = await pool.query(
+    "SELECT Player.name, Player.color, Player.id FROM Player " +
+      "JOIN Game_Player ON Player.id = Game_Player.player_id " +
+      "JOIN Game ON Game.id = Game_Player.game_id WHERE Game.id =?",
+    gameId
+  );
+  let playersInGame = playersInGameResult[0];
+
+  // 3. send message to all players with the question
+  let showQuestionMessage = JSON.stringify({
+    type: "QUESTION_SHOWN",
+    question: questionToSend,
+    requestId: data.id,
+  });
+  console.log("sending: ", showQuestionMessage);
+
+  let targetIds = new Set(playersInGame.map((player) => player.id));
+  console.log("targetIds: ", targetIds);
+
+  for (const [playerId, websocket] of clients.entries()) {
+    console.log("client id: ", playerId);
+    if (targetIds.has(playerId) && websocket.readyState === websocket.OPEN) {
+      await websocket.send(showQuestionMessage);
+    }
+  }
 }
