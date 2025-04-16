@@ -141,6 +141,7 @@ async function createLobby(websocket, lobbyId, playerId, data) {
     type: "LOBBY_CREATED",
     lobbyId: lobbyId,
     requestId: data.id,
+    playerId: playerId,
   });
 
   try {
@@ -347,18 +348,24 @@ async function submitAnswer(websocket, playerId, data) {
   let playersInGame = playersInGameResult[0];
 
   //  ii. create object {} with players
-  let playersAnswers = {};
-  //  iii. "playerID": true/false if answered/not anwered yet (compare with answers from redis)
+  let playersAnswered = {};
+  let playersWithAnswers = {};
   for (let playerInGame of playersInGame) {
+    //  iii. "playerID": true/false if answered/not anwered yet (compare with answers from redis)
     let playerHasAnswered = playerInGame.id in answers;
+    playersAnswered[playerInGame.id] = playerHasAnswered;
 
-    playersAnswers[playerInGame.id] = playerHasAnswered;
+    if (playerInGame.id in answers) {
+      // iv. "playerID": answer
+      playersWithAnswers[playerInGame.id] = answers[playerInGame.id];
+    }
   }
 
   // 3. respond to player that answered with type "ANSWER_SUBMITTED" and with an array with the players that have answered
   let playerSubmitAnswerMessage = JSON.stringify({
     type: "ANSWER_SUBMITTED",
-    playersAnswers: playersAnswers,
+    playersAnswered: playersAnswered,
+    playersWithAnswers: playersWithAnswers,
     requestId: data.id,
   });
 
