@@ -219,16 +219,19 @@ class PlayerAnsweredResponse extends WebsocketResponse {
   const PlayerAnsweredResponse({
     required this.requestId,
     required this.playerAnswered,
+    required this.answer,
   }) : super(type: 'PLAYER_ANSWERED');
 
   @override
   final String requestId;
   final String playerAnswered;
+  final String answer;
 
   factory PlayerAnsweredResponse.fromJson(Map<String, dynamic> json) {
     return PlayerAnsweredResponse(
       requestId: json['requestId'],
       playerAnswered: json['playerAnswered'],
+      answer: json['answer'],
     );
   }
 }
