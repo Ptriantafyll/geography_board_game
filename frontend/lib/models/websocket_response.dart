@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:geography_board_game/functions/colors.dart';
 import 'package:geography_board_game/models/player.dart';
+import 'package:geography_board_game/models/question.dart';
 
 // todo: make this abstract and separate the responses into files
 // Defines abstract class for the responses of the websocket connection
@@ -146,6 +148,30 @@ class PlayerJoinFailedResponse extends WebsocketResponse {
   }
 }
 
+class QuestionShownResponse extends WebsocketResponse {
+  const QuestionShownResponse({
+    required this.requestId,
+    required this.question,
+  }) : super(type: 'QUESTION_SHOWN');
+
+  @override
+  final String requestId;
+  final GameQuestion question;
+
+  factory QuestionShownResponse.fromJson(Map<String, dynamic> json) {
+    final gameQuestion = GameQuestion(
+      icon: Icon(Icons.question_mark),
+      questionText: json['question']['text'],
+      questionAnswer: double.parse(json['question']['answer']),
+    );
+
+    return QuestionShownResponse(
+      requestId: json['requestId'],
+      question: gameQuestion,
+    );
+  }
+}
+
 class AnswerSubmittedResponse extends WebsocketResponse {
   const AnswerSubmittedResponse({required this.requestId})
       : super(type: 'ANSWER_SUBMITTED');
@@ -212,6 +238,9 @@ WebsocketResponse parseWebsocketResponse(String jsonString) {
     case 'GAME_STARTED':
       print(json);
       return GameStartedResponse.fromJson(json);
+    case 'QUESTION_SHOWN':
+      print(json);
+      return QuestionShownResponse.fromJson(json);
     case 'ANSWER_SUBMITTED':
       print(json);
       return AnswerSubmittedResponse.fromJson(json);

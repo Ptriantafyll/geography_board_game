@@ -143,6 +143,27 @@ class DeletePlayerRequest {
   }
 }
 
+// SHOW_QUESTION request
+class ShowQuestionRequest {
+  const ShowQuestionRequest({
+    required this.id,
+    required this.gameId,
+  });
+
+  final String type = 'SHOW_QUESTION';
+  final String gameId;
+  final String id;
+
+  // convert DeleteLobbyRequest object to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'type': type,
+      'id': id,
+      'gameId': gameId,
+    };
+  }
+}
+
 // SUBMIT_ANSWER request
 class SubmitAnswerRequest {
   const SubmitAnswerRequest({
