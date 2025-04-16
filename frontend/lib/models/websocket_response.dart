@@ -159,14 +159,20 @@ class AnswerSubmittedResponse extends WebsocketResponse {
 }
 
 class PlayerAnsweredResponse extends WebsocketResponse {
-  const PlayerAnsweredResponse({required this.requestId})
-      : super(type: 'ANSWER_SUBMITTED');
+  const PlayerAnsweredResponse({
+    required this.requestId,
+    required this.playerAnswered,
+  }) : super(type: 'PLAYER_ANSWERED');
 
   @override
   final String requestId;
+  final String playerAnswered;
 
   factory PlayerAnsweredResponse.fromJson(Map<String, dynamic> json) {
-    return PlayerAnsweredResponse(requestId: json['requestId']);
+    return PlayerAnsweredResponse(
+      requestId: json['requestId'],
+      playerAnswered: json['playerAnswered'],
+    );
   }
 }
 

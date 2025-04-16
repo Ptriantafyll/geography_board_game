@@ -70,11 +70,11 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     print(_questionController.text);
 
     if (showingScores) {
-      // todo: send websocket request to get scores from redis
       showingScores = false;
       showingQuestion = true;
       answerSubmitted = false;
       showingAnswers = false;
+      // todo: send websocket request to alert everyone that we move to the next question
     } else if (showingQuestion) {
       // todo: remove this case after everything is set up correctly
 
@@ -108,6 +108,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       answerSubmitted = false;
       showingAnswers = false;
       _questionController.clear();
+      // todo: send websocket request to get scores from redis
     }
 
     setState(() {
