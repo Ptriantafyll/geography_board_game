@@ -23,7 +23,11 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   late WebsocketNotifier webSocketNotifier;
   final _questionController = TextEditingController();
   final questions = dummy_questions;
-  GameQuestion? currentQuestion;
+  var currentQuestion = GameQuestion(
+    icon: Icon(Icons.question_mark),
+    questionText: "",
+    questionAnswer: 0,
+  );
   bool showingScores = true;
   bool showingQuestion = false;
   bool answerSubmitted = false;
@@ -49,32 +53,23 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     await webSocketNotifier.submitAnswer(answer, widget.gameId);
     // 2. move to next state (answerSubmitted)
     // todo: remove the following lines after making theresponse from the server
-    print(showingScores);
-    print(showingQuestion);
-    print(answerSubmitted);
-    print(showingAnswers);
-    setState(() {
-      showingScores = false;
-      showingQuestion = false;
-      answerSubmitted = true;
-      showingAnswers = false;
-    });
+    // setState(() {
+    //   showingScores = false;
+    //   showingQuestion = false;
+    //   answerSubmitted = true;
+    //   showingAnswers = false;
+    // });
   }
 
-  void handleQuestion() {
-    print(showingScores);
-    print(showingQuestion);
-    print(answerSubmitted);
-    print(showingAnswers);
-    // todo: get a random question from the db
-    print(_questionController.text);
-
+  void handleQuestion() async {
     if (showingScores) {
-      showingScores = false;
-      showingQuestion = true;
-      answerSubmitted = false;
-      showingAnswers = false;
-      // todo: send websocket request to alert everyone that we move to the next question
+      await webSocketNotifier.showQuestion(widget.gameId);
+      setState(() {
+        showingScores = false;
+        showingQuestion = true;
+        answerSubmitted = false;
+        showingAnswers = false;
+      });
     } else if (showingQuestion) {
       // todo: remove this case after everything is set up correctly
 
@@ -87,37 +82,28 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         );
         return;
       }
-
-      showingScores = false;
-      showingQuestion = false;
-      answerSubmitted = true;
-      showingAnswers = false;
     } else if (answerSubmitted) {
       // todo: move this in build after checking the response to see if all players have answered
       // todo: get all answers from the question
       // todo: probably from redis?
       // todo: wait for all players to answer and then continue
       // todo: show check mark for players that have answered
-      showingScores = false;
-      showingQuestion = false;
-      answerSubmitted = false;
-      showingAnswers = true;
+      setState(() {
+        showingScores = false;
+        showingQuestion = false;
+        answerSubmitted = false;
+        showingAnswers = true;
+      });
     } else if (showingAnswers) {
-      showingScores = true;
-      showingQuestion = false;
-      answerSubmitted = false;
-      showingAnswers = false;
+      setState(() {
+        showingScores = true;
+        showingQuestion = false;
+        answerSubmitted = false;
+        showingAnswers = false;
+      });
       _questionController.clear();
       // todo: send websocket request to get scores from redis
     }
-
-    setState(() {
-      currentQuestion = GameQuestion(
-        questionText: questions[0]['question'],
-        questionAnswer: questions[0]['answer'],
-        icon: Icon(Icons.question_mark),
-      );
-    });
   }
 
   @override
@@ -138,13 +124,28 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     Widget content;
     Widget? bottomButton;
 
+    if (response is QuestionShownResponse) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          currentQuestion = response.question;
+        });
+        showingScores = false;
+        showingQuestion = true;
+        answerSubmitted = false;
+        showingAnswers = false;
+        ref.read(websocketProvider.notifier).reset();
+      });
+    }
+
     if (response is AnswerSubmittedResponse) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         // move to answerSubmitted after getting the response
-        showingScores = false;
-        showingQuestion = false;
-        answerSubmitted = true;
-        showingAnswers = false;
+        setState(() {
+          showingScores = false;
+          showingQuestion = false;
+          answerSubmitted = true;
+          showingAnswers = false;
+        });
         ref.read(websocketProvider.notifier).reset();
       });
     }
@@ -179,7 +180,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     } else if (showingQuestion) {
       content = Center(
         child: QuestionCard(
-          gameQuestion: currentQuestion!,
+          gameQuestion: currentQuestion,
           questionController: _questionController,
           onSubmitAnswer: submitAnswer,
         ),
@@ -193,7 +194,11 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         child: Text('Answer submitted'),
       );
 
-      bottomButton = null;
+      bottomButton = ElevatedButton(
+        onPressed: handleQuestion,
+        child: const Text('Show Answers'),
+      );
+      ;
     } else if (showingAnswers) {
       content = Center(
         // child: Text('Showing Answers'),
