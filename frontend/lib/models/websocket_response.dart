@@ -45,17 +45,20 @@ class LobbyCreatedResponse extends WebsocketResponse {
   const LobbyCreatedResponse({
     required this.lobbyId,
     required this.requestId,
+    required this.playerId,
   }) : super(type: 'LOBBY_CREATED');
 
   final String lobbyId;
   @override
   final String requestId;
+  final String playerId;
 
   // convert JSON to LobbyCreatedResponse object
   factory LobbyCreatedResponse.fromJson(Map<String, dynamic> json) {
     return LobbyCreatedResponse(
       lobbyId: json['lobbyId'],
       requestId: json['requestId'],
+      playerId: json['playerId'],
     );
   }
 }
@@ -173,14 +176,42 @@ class QuestionShownResponse extends WebsocketResponse {
 }
 
 class AnswerSubmittedResponse extends WebsocketResponse {
-  const AnswerSubmittedResponse({required this.requestId})
-      : super(type: 'ANSWER_SUBMITTED');
+  const AnswerSubmittedResponse({
+    required this.requestId,
+    required this.playersWithAnswers,
+    required this.playersAnswered,
+  }) : super(type: 'ANSWER_SUBMITTED');
 
   @override
   final String requestId;
+  final Map<String, String> playersWithAnswers;
+  final Map<String, bool> playersAnswered;
 
   factory AnswerSubmittedResponse.fromJson(Map<String, dynamic> json) {
-    return AnswerSubmittedResponse(requestId: json['requestId']);
+    // todo: maybe remove the temp maps and make the other maps <String, dynamic>
+    Map<String, dynamic> tempPlayersAnswered = json['playersAnswered'];
+    Map<String, bool> tempPlayersAnswered2 = {};
+
+    tempPlayersAnswered.forEach((playerid, hasAnswered) {
+      print(playerid);
+      print(hasAnswered);
+      tempPlayersAnswered2[playerid] = hasAnswered;
+    });
+
+    Map<String, dynamic> tempPlayersWithAnswers = json['playersWithAnswers'];
+    Map<String, String> tempPlayersWithAnswers2 = {};
+
+    tempPlayersWithAnswers.forEach((playerid, answer) {
+      print(playerid);
+      print(answer);
+      tempPlayersWithAnswers2[playerid] = answer;
+    });
+
+    return AnswerSubmittedResponse(
+      requestId: json['requestId'],
+      playersAnswered: tempPlayersAnswered2,
+      playersWithAnswers: tempPlayersWithAnswers2,
+    );
   }
 }
 
