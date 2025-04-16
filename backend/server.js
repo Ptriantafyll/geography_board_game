@@ -377,6 +377,7 @@ async function submitAnswer(websocket, playerId, data) {
   let playerAnsweredMessage = JSON.stringify({
     type: "PLAYER_ANSWERED",
     playerAnswered: playerId,
+    answer: answer,
     requestId: data.id,
   });
 
