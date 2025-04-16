@@ -57,6 +57,7 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
         final owner = Player(
           color: _availableColors[_selectedIndex],
           name: _playerNameController.text,
+          id: response.playerId,
         );
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
