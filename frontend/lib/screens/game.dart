@@ -68,6 +68,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       // return;
     } else if (answerSubmitted) {
       // todo: wait for all players to answer and then continue
+      setState(() {
+        showingScores = false;
+        showingQuestion = false;
+        answerSubmitted = false;
+        showingAnswers = true;
+      });
     } else if (showingAnswers) {
       setState(() {
         showingScores = true;
@@ -75,9 +81,9 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         answerSubmitted = false;
         showingAnswers = false;
       });
-      // todo: calculate winner of the round
       _questionController.clear();
-      // todo: send websocket request to get scores from redis
+      // todo: calculate winner of the round
+      //todo: clear every answer before showing scores
     }
   }
 
@@ -135,6 +141,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         //todo: wait for all players to answer and then continue
         setState(() {
           playersAnswered[response.playerAnswered] = true;
+          playersWithAnswers[response.playerAnswered] = response.answer;
         });
 
         ref.read(websocketProvider.notifier).reset();
@@ -179,9 +186,6 @@ class _GameScreenState extends ConsumerState<GameScreen> {
             Icon hasAnsweredIcon;
             final playerId = widget.players[index].id;
 
-            print('playerid: $playerId');
-            print('has answered: ${playersAnswered[playerId]}');
-
             if (playersAnswered[playerId]!) {
               hasAnsweredIcon = Icon(
                 Icons.check,
@@ -215,20 +219,23 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       ;
     } else if (showingAnswers) {
       content = Center(
-        // child: Text('Showing Answers'),
         child: ListView.builder(
           itemCount: widget.players.length,
-          itemBuilder: (ctx, index) => Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              PlayerItem(
-                player: widget.players[index],
-                isGame: false,
-              ),
-              // todo: make this each players answer
-              Text(_questionController.text),
-            ],
-          ),
+          itemBuilder: (ctx, index) {
+            final playerId = widget.players[index].id;
+            final answer = playersWithAnswers[playerId]!;
+
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                PlayerItem(
+                  player: widget.players[index],
+                  isGame: false,
+                ),
+                Text(answer),
+              ],
+            );
+          },
         ),
       );
 
