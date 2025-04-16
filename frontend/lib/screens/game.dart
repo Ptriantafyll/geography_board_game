@@ -49,16 +49,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     final answer = double.parse(_questionController.text);
     // todo: send websocket request to submit answer
 
-    // 1. send request
     await webSocketNotifier.submitAnswer(answer, widget.gameId);
-    // 2. move to next state (answerSubmitted)
-    // todo: remove the following lines after making theresponse from the server
-    // setState(() {
-    //   showingScores = false;
-    //   showingQuestion = false;
-    //   answerSubmitted = true;
-    //   showingAnswers = false;
-    // });
   }
 
   void handleQuestion() async {
@@ -71,17 +62,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         showingAnswers = false;
       });
     } else if (showingQuestion) {
-      // todo: remove this case after everything is set up correctly
-
-      // todo: also check if given answer is numbers only
-      if (_questionController.text.isEmpty) {
-        showAlertDialog(
-          "No answer",
-          "Please answer the question",
-          context,
-        );
-        return;
-      }
+      // return;
     } else if (answerSubmitted) {
       // todo: move this in build after checking the response to see if all players have answered
       // todo: get all answers from the question
@@ -95,6 +76,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         showingAnswers = true;
       });
     } else if (showingAnswers) {
+      // todo: calculate winner of the round
       setState(() {
         showingScores = true;
         showingQuestion = false;
@@ -141,6 +123,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         // move to answerSubmitted after getting the response
         setState(() {
+          // move to next state (answer submitted)
           showingScores = false;
           showingQuestion = false;
           answerSubmitted = true;
