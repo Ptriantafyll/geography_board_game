@@ -23,6 +23,8 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   late WebsocketNotifier webSocketNotifier;
   final _questionController = TextEditingController();
   final questions = dummy_questions;
+  Map<String, String> playersWithAnswers = {};
+  Map<String, bool> playersAnswered = {};
   var currentQuestion = GameQuestion(
     icon: Icon(Icons.question_mark),
     questionText: "",
@@ -62,27 +64,18 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         showingAnswers = false;
       });
     } else if (showingQuestion) {
+      // this is handled in build if response is question shown
       // return;
     } else if (answerSubmitted) {
-      // todo: move this in build after checking the response to see if all players have answered
-      // todo: get all answers from the question
-      // todo: probably from redis?
       // todo: wait for all players to answer and then continue
-      // todo: show check mark for players that have answered
-      setState(() {
-        showingScores = false;
-        showingQuestion = false;
-        answerSubmitted = false;
-        showingAnswers = true;
-      });
     } else if (showingAnswers) {
-      // todo: calculate winner of the round
       setState(() {
         showingScores = true;
         showingQuestion = false;
         answerSubmitted = false;
         showingAnswers = false;
       });
+      // todo: calculate winner of the round
       _questionController.clear();
       // todo: send websocket request to get scores from redis
     }
@@ -123,11 +116,14 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         // move to answerSubmitted after getting the response
         setState(() {
-          // move to next state (answer submitted)
           showingScores = false;
           showingQuestion = false;
           answerSubmitted = true;
           showingAnswers = false;
+
+          // todo: clear those after seeing scores
+          playersWithAnswers = response.playersWithAnswers;
+          playersAnswered = response.playersAnswered;
         });
         ref.read(websocketProvider.notifier).reset();
       });
@@ -135,7 +131,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
     if (response is PlayerAnsweredResponse) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // todo: udpate submitted answers by adding checkmark icon next to player
+        //todo: make button disabled until all players have answered or
+        //todo: wait for all players to answer and then continue
+        setState(() {
+          playersAnswered[response.playerAnswered] = true;
+        });
+
         ref.read(websocketProvider.notifier).reset();
       });
     }
@@ -171,10 +172,40 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
       bottomButton = null;
     } else if (answerSubmitted) {
-      //todo: wait for all players to answer and then continue
-      //todo: show check mark for players that have answered
       content = Center(
-        child: Text('Answer submitted'),
+        child: ListView.builder(
+          itemCount: widget.players.length,
+          itemBuilder: (ctx, index) {
+            Icon hasAnsweredIcon;
+            final playerId = widget.players[index].id;
+
+            print('playerid: $playerId');
+            print('has answered: ${playersAnswered[playerId]}');
+
+            if (playersAnswered[playerId]!) {
+              hasAnsweredIcon = Icon(
+                Icons.check,
+                color: Colors.green,
+              );
+            } else {
+              hasAnsweredIcon = Icon(
+                Icons.close,
+                color: Colors.red,
+              );
+            }
+
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                PlayerItem(
+                  player: widget.players[index],
+                  isGame: false,
+                ),
+                hasAnsweredIcon,
+              ],
+            );
+          },
+        ),
       );
 
       bottomButton = ElevatedButton(
@@ -194,6 +225,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                 player: widget.players[index],
                 isGame: false,
               ),
+              // todo: make this each players answer
               Text(_questionController.text),
             ],
           ),
