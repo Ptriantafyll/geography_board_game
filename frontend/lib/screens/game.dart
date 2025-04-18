@@ -34,6 +34,24 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   bool showingQuestion = false;
   bool answerSubmitted = false;
   bool showingAnswers = false;
+  String roundWinner = '';
+
+  String calculateRoundWinner(
+      Map<String, String> playersWithAnswers, double answer) {
+    final filtered = playersWithAnswers.entries
+        .where((player) => double.parse(player.value) <= answer)
+        .toList();
+
+    if (filtered.isEmpty) return '';
+
+    // find closest player answer to the actual answer and lower than it and return player id
+    return filtered
+        .reduce((a, b) => ((double.parse(a.value) - answer).abs() <
+                (double.parse(b.value) - answer).abs())
+            ? a
+            : b)
+        .key;
+  }
 
   void submitAnswer() async {
     final isNumeric =
@@ -62,6 +80,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         showingQuestion = true;
         answerSubmitted = false;
         showingAnswers = false;
+        roundWinner = '';
       });
     } else if (showingQuestion) {
       // this is handled in build if response is question shown
@@ -75,15 +94,27 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         showingAnswers = true;
       });
     } else if (showingAnswers) {
+      final answer = currentQuestion.questionAnswer;
       setState(() {
         showingScores = true;
         showingQuestion = false;
         answerSubmitted = false;
         showingAnswers = false;
+
+        // clear every answer before showing scores
+        playersAnswered.forEach((playerId, _) {
+          playersAnswered[playerId] = false;
+        });
+
+        // todo: calculate winner of the round
+        final winnerId = calculateRoundWinner(playersWithAnswers, answer);
+        roundWinner = widget.players
+            .firstWhere(
+              (player) => player.id == winnerId,
+            )
+            .name;
       });
       _questionController.clear();
-      // todo: calculate winner of the round
-      //todo: clear every answer before showing scores
     }
   }
 
@@ -152,6 +183,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       content = Column(
         children: [
           Text('Game ID: ${widget.gameId}'),
+          Text('Last round winner: $roundWinner'),
           Expanded(
             child: ListView.builder(
               itemCount: widget.players.length,
