@@ -394,7 +394,19 @@ async function submitAnswer(websocket, playerId, data) {
   }
 
   // todo: clear all answers from redis after all players have submitted
-  // await redis.del(`game:${gameId}:answers`);
+  console.log("players with answers: ", playersWithAnswers);
+  console.log(
+    "players with answers length: ",
+    Object.keys(playersWithAnswers).length
+  );
+  console.log("players in game: ", playersInGame);
+  console.log("players in game length: ", playersInGame.length);
+  if (Object.keys(playersWithAnswers).length === playersInGame.length) {
+    await redis.del(`game:${gameId}:answers`);
+    console.log(
+      "All players have answered this round. Deleting answers from redis"
+    );
+  }
 }
 
 async function showQuestion(websocket, data) {
