@@ -85,67 +85,60 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     await webSocketNotifier.submitAnswer(answer, widget.gameId);
   }
 
-  void handleQuestion() async {
-    if (showingScores) {
-      for (Player player in widget.players) {
-        if (player.score == pointsNeeded) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (ctx) => WinnerScreen(
-                winner: player,
-              ),
+  void showQuestion() async {
+    // todo: find another way to handle showing the winner
+    for (Player player in widget.players) {
+      if (player.score == pointsNeeded) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (ctx) => WinnerScreen(
+              winner: player,
             ),
-          );
-        }
+          ),
+        );
       }
-
-      await webSocketNotifier.showQuestion(widget.gameId);
-      setState(() {
-        showingScores = false;
-        showingQuestion = true;
-        answerSubmitted = false;
-        showingAnswers = false;
-        roundWinner = '';
-      });
-    } else if (showingQuestion) {
-      // this is handled in build if response is question shown
-      // return;
-    } else if (answerSubmitted) {
-      // todo: wait for all players to answer and then continue
-      setState(() {
-        showingScores = false;
-        showingQuestion = false;
-        answerSubmitted = false;
-        showingAnswers = true;
-      });
-    } else if (showingAnswers) {
-      final answer = currentQuestion.questionAnswer;
-      final winnerId = calculateRoundWinner(playersWithAnswers, answer);
-      setState(() {
-        showingScores = true;
-        showingQuestion = false;
-        answerSubmitted = false;
-        showingAnswers = false;
-
-        // clear every answer before showing scores
-        playersAnswered.forEach((playerId, _) {
-          playersAnswered[playerId] = false;
-        });
-
-        // calculate winner of the round
-        roundWinner = widget.players
-            .firstWhere(
-              (player) => player.id == winnerId,
-            )
-            .name;
-
-        // todo: send request to update scores in redis as well
-        // update scores
-        updateScores(winnerId);
-      });
-
-      _questionController.clear();
     }
+
+    await webSocketNotifier.showQuestion(widget.gameId);
+  }
+
+  void showAnswers() async {
+    // todo: wait for all players to answer and then continue
+    setState(() {
+      showingScores = false;
+      showingQuestion = false;
+      answerSubmitted = false;
+      showingAnswers = true;
+    });
+  }
+
+  void showScores() async {
+    final answer = currentQuestion.questionAnswer;
+    final winnerId = calculateRoundWinner(playersWithAnswers, answer);
+    setState(() {
+      showingScores = true;
+      showingQuestion = false;
+      answerSubmitted = false;
+      showingAnswers = false;
+
+      // clear every answer before showing scores
+      playersAnswered.forEach((playerId, _) {
+        playersAnswered[playerId] = false;
+      });
+
+      // calculate winner of the round
+      roundWinner = widget.players
+          .firstWhere(
+            (player) => player.id == winnerId,
+          )
+          .name;
+
+      // todo: send request to update scores in redis as well
+      // update scores
+      updateScores(winnerId);
+    });
+
+    _questionController.clear();
   }
 
   @override
@@ -227,7 +220,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       );
 
       bottomButton = ElevatedButton(
-        onPressed: handleQuestion,
+        onPressed: showQuestion,
         child: const Text('Next Question'),
       );
     } else if (showingQuestion) {
@@ -275,10 +268,10 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       );
 
       bottomButton = ElevatedButton(
-        onPressed: handleQuestion,
+        // todo: remove this and go to next state after everyone answered
+        onPressed: showAnswers,
         child: const Text('Show Answers'),
       );
-      ;
     } else if (showingAnswers) {
       // todo: add edit answer button
       content = Center(
@@ -303,7 +296,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       );
 
       bottomButton = ElevatedButton(
-        onPressed: handleQuestion,
+        onPressed: showScores,
         child: const Text('Show Scores'),
       );
     } else {
@@ -323,16 +316,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         ),
       ),
       body: content,
-      floatingActionButton: ElevatedButton(
-        onPressed: handleQuestion,
-        child: showingScores
-            ? const Text('Next Question')
-            : showingQuestion || answerSubmitted
-                ? const Text('')
-                : const Text('Show Scores'),
-      ),
-      // todo: uncomment this after everythingis done
-      // bottomButton,
+      floatingActionButton: bottomButton,
     );
   }
 }
