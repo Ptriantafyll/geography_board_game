@@ -6,6 +6,8 @@ import 'package:geography_board_game/models/player.dart';
 import 'package:geography_board_game/models/question.dart';
 import 'package:geography_board_game/models/websocket_response.dart';
 import 'package:geography_board_game/providers/websocket_provider.dart';
+import 'package:geography_board_game/screens/welcome.dart';
+import 'package:geography_board_game/screens/winner.dart';
 import 'package:geography_board_game/widgets/player_item.dart';
 import 'package:geography_board_game/widgets/question_card.dart';
 
@@ -36,6 +38,9 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   bool showingAnswers = false;
   String roundWinner = '';
 
+  // how many points are needed to win
+  final int pointsNeeded = 10;
+
   String calculateRoundWinner(
       Map<String, String> playersWithAnswers, double answer) {
     final filtered = playersWithAnswers.entries
@@ -54,11 +59,8 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   }
 
   void updateScores(String winnerId) async {
-    print("winner id: $winnerId");
     for (Player player in widget.players) {
-      print('${player.name} id: ${player.id}');
       if (player.id == winnerId) {
-        print("updating score for ${player.name}");
         setState(() {
           player.score = player.score + 1;
         });
@@ -80,7 +82,6 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     }
 
     final answer = double.parse(_questionController.text);
-    // todo: send websocket request to submit answer
 
     await webSocketNotifier.submitAnswer(answer, widget.gameId);
   }
@@ -88,6 +89,19 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   void handleQuestion() async {
     if (showingScores) {
       await webSocketNotifier.showQuestion(widget.gameId);
+
+      for (Player player in widget.players) {
+        if (player.score == pointsNeeded) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (ctx) => WinnerScreen(
+                winner: player,
+              ),
+            ),
+          );
+        }
+      }
+
       setState(() {
         showingScores = false;
         showingQuestion = true;
