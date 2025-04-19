@@ -49,6 +49,9 @@ wss.on("connection", async (socket) => {
         case "SUBMIT_ANSWER":
           await submitAnswer(socket, playerId, data);
           break;
+        case "UPDATE_SCORES":
+          await submitAnswer(socket, playerId, data);
+          break;
         default:
           socket.send(
             JSON.stringify({ type: "ERROR", message: "Unknown action" })
@@ -444,4 +447,9 @@ async function showQuestion(websocket, data) {
       await websocket.send(showQuestionMessage);
     }
   }
+}
+
+async function updateScores(websocket, data) {
+  // 1. get scores from request
+  // 2. update scores in redis to add 1 to the round winner
 }

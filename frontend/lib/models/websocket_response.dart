@@ -236,6 +236,33 @@ class PlayerAnsweredResponse extends WebsocketResponse {
   }
 }
 
+class ScoresUpdatedResponse extends WebsocketResponse {
+  const ScoresUpdatedResponse({
+    required this.requestId,
+    required this.playersScores,
+  }) : super(type: 'SCORES_UPDATED');
+
+  @override
+  final String requestId;
+  final Map<String, int> playersScores;
+
+  factory ScoresUpdatedResponse.fromJson(Map<String, dynamic> json) {
+    Map<String, dynamic> tempplayersScores = json['playersScores'];
+    Map<String, int> tempplayersScores2 = {};
+
+    tempplayersScores.forEach((playerid, score) {
+      print(playerid);
+      print(score);
+      tempplayersScores2[playerid] = score;
+    });
+
+    return ScoresUpdatedResponse(
+      requestId: json['requestId'],
+      playersScores: tempplayersScores2,
+    );
+  }
+}
+
 class PongResponse extends WebsocketResponse {
   const PongResponse({required this.requestId}) : super(type: 'PONG');
   @override
@@ -281,6 +308,9 @@ WebsocketResponse parseWebsocketResponse(String jsonString) {
     case 'PLAYER_ANSWERED':
       print(json);
       return PlayerAnsweredResponse.fromJson(json);
+    case 'SCORES_UPDATED':
+      print(json);
+      return ScoresUpdatedResponse.fromJson(json);
     case 'PONG':
       print(json);
       return PongResponse.fromJson(json);

@@ -188,6 +188,30 @@ class SubmitAnswerRequest {
   }
 }
 
+// UDPATE_SCORES request
+class UpdateScoresRequest {
+  const UpdateScoresRequest({
+    required this.id,
+    required this.winner,
+    required this.gameId,
+  });
+
+  final String type = 'UDPATE_SCORES';
+  final double winner;
+  final String gameId;
+  final String id;
+
+  // convert DeleteLobbyRequest object to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'type': type,
+      'id': id,
+      'winner': winner,
+      'gameId': gameId,
+    };
+  }
+}
+
 // PING request
 class PingRequest {
   const PingRequest({required this.id});
