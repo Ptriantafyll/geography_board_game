@@ -103,7 +103,6 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   }
 
   void showAnswers() async {
-    // todo: wait for all players to answer and then continue
     setState(() {
       showingScores = false;
       showingQuestion = false;
@@ -133,9 +132,9 @@ class _GameScreenState extends ConsumerState<GameScreen> {
           )
           .name;
 
-      // todo: send request to update scores in redis as well
       // update scores
       updateScores(winnerId);
+      // todo: send request to update scores in redis as well
     });
 
     _questionController.clear();
@@ -181,7 +180,6 @@ class _GameScreenState extends ConsumerState<GameScreen> {
           answerSubmitted = true;
           showingAnswers = false;
 
-          // todo: clear those after seeing scores
           playersWithAnswers = response.playersWithAnswers;
           playersAnswered = response.playersAnswered;
         });
