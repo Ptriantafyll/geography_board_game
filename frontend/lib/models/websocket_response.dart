@@ -236,6 +236,7 @@ class PlayerAnsweredResponse extends WebsocketResponse {
   }
 }
 
+// todo: maybe this is not needed as we only keep scores in redis for reconnection purposes
 class ScoresUpdatedResponse extends WebsocketResponse {
   const ScoresUpdatedResponse({
     required this.requestId,
