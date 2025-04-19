@@ -391,12 +391,11 @@ async function submitAnswer(websocket, playerId, data) {
     if (player_Id === playerId) continue;
 
     if (targetIds.has(player_Id) && websocket.readyState === websocket.OPEN) {
-      //todo: test this
       await websocket.send(playerAnsweredMessage);
     }
   }
 
-  // todo: clear all answers from redis after all players have submitted
+  // clear all answers from redis after all players have submitted
   console.log("players with answers: ", playersWithAnswers);
   console.log(
     "players with answers length: ",
@@ -404,6 +403,7 @@ async function submitAnswer(websocket, playerId, data) {
   );
   console.log("players in game: ", playersInGame);
   console.log("players in game length: ", playersInGame.length);
+
   if (Object.keys(playersWithAnswers).length === playersInGame.length) {
     await redis.del(`game:${gameId}:answers`);
     console.log(
