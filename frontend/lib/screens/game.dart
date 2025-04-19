@@ -6,7 +6,6 @@ import 'package:geography_board_game/models/player.dart';
 import 'package:geography_board_game/models/question.dart';
 import 'package:geography_board_game/models/websocket_response.dart';
 import 'package:geography_board_game/providers/websocket_provider.dart';
-import 'package:geography_board_game/screens/welcome.dart';
 import 'package:geography_board_game/screens/winner.dart';
 import 'package:geography_board_game/widgets/player_item.dart';
 import 'package:geography_board_game/widgets/question_card.dart';
@@ -88,8 +87,6 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
   void handleQuestion() async {
     if (showingScores) {
-      await webSocketNotifier.showQuestion(widget.gameId);
-
       for (Player player in widget.players) {
         if (player.score == pointsNeeded) {
           Navigator.of(context).push(
@@ -102,6 +99,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         }
       }
 
+      await webSocketNotifier.showQuestion(widget.gameId);
       setState(() {
         showingScores = false;
         showingQuestion = true;
@@ -153,7 +151,6 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   @override
   void initState() {
     webSocketNotifier = ref.read(websocketProvider.notifier);
-
     super.initState();
   }
 
@@ -173,11 +170,11 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
           currentQuestion = response.question;
+          showingScores = false;
+          showingQuestion = true;
+          answerSubmitted = false;
+          showingAnswers = false;
         });
-        showingScores = false;
-        showingQuestion = true;
-        answerSubmitted = false;
-        showingAnswers = false;
         ref.read(websocketProvider.notifier).reset();
       });
     }
