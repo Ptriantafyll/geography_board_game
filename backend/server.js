@@ -372,7 +372,6 @@ async function submitAnswer(websocket, playerId, data) {
     requestId: data.id,
   });
 
-  // todo: test this
   await websocket.send(playerSubmitAnswerMessage);
   console.log("sent: ", playerSubmitAnswerMessage);
 
