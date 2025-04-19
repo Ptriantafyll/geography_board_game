@@ -53,6 +53,19 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         .key;
   }
 
+  void updateScores(String winnerId) async {
+    print("winner id: $winnerId");
+    for (Player player in widget.players) {
+      print('${player.name} id: ${player.id}');
+      if (player.id == winnerId) {
+        print("updating score for ${player.name}");
+        setState(() {
+          player.score = player.score + 1;
+        });
+      }
+    }
+  }
+
   void submitAnswer() async {
     final isNumeric =
         RegExp(r'^-?\d+(\.\d+)?$').hasMatch(_questionController.text);
@@ -95,6 +108,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       });
     } else if (showingAnswers) {
       final answer = currentQuestion.questionAnswer;
+      final winnerId = calculateRoundWinner(playersWithAnswers, answer);
       setState(() {
         showingScores = true;
         showingQuestion = false;
@@ -106,14 +120,18 @@ class _GameScreenState extends ConsumerState<GameScreen> {
           playersAnswered[playerId] = false;
         });
 
-        // todo: calculate winner of the round
-        final winnerId = calculateRoundWinner(playersWithAnswers, answer);
+        // calculate winner of the round
         roundWinner = widget.players
             .firstWhere(
               (player) => player.id == winnerId,
             )
             .name;
+
+        // todo: send request to update scores in redis as well
+        // update scores
+        updateScores(winnerId);
       });
+
       _questionController.clear();
     }
   }
@@ -121,6 +139,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   @override
   void initState() {
     webSocketNotifier = ref.read(websocketProvider.notifier);
+
     super.initState();
   }
 
@@ -250,6 +269,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       );
       ;
     } else if (showingAnswers) {
+      // todo: add edit answer button
       content = Center(
         child: ListView.builder(
           itemCount: widget.players.length,

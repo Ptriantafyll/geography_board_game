@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geography_board_game/models/game_action.dart';
 
 class Player {
-  const Player({
+  Player({
     required this.color,
     required this.name,
     this.score = 0,
@@ -14,7 +14,7 @@ class Player {
 
   final Color color;
   final String name;
-  final int score;
+  int score;
   final int blocksReceived;
   final List<GameAction> actionsAvailable;
   final String id;
