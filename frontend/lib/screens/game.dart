@@ -191,8 +191,6 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
     if (response is PlayerAnsweredResponse) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        //todo: make button disabled until all players have answered or
-        //todo: wait for all players to answer and then continue
         setState(() {
           playersAnswered[response.playerAnswered] = true;
           playersWithAnswers[response.playerAnswered] = response.answer;
@@ -267,9 +265,14 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         ),
       );
 
+      var numOfPlayersThatHaveAnswered =
+          playersAnswered.values.where((value) => value).length;
+
+      // make button disabled until all players have answered
       bottomButton = ElevatedButton(
-        // todo: remove this and go to next state after everyone answered
-        onPressed: showAnswers,
+        onPressed: numOfPlayersThatHaveAnswered == widget.players.length
+            ? showAnswers
+            : null,
         child: const Text('Show Answers'),
       );
     } else if (showingAnswers) {
