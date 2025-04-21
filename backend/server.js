@@ -414,11 +414,24 @@ async function submitAnswer(websocket, playerId, data) {
 async function showQuestion(websocket, data) {
   let gameId = data.gameId;
 
+  let numOfQuestionsResult = await pool.query("SELECT COUNT(id) FROM Question");
+  let numOfQuestions = numOfQuestionsResult[0][0]["COUNT(id)"];
+  let questionId = getRandomInt(numOfQuestions);
+
+  let questionResult = await pool.query(
+    "SELECT text, answer FROM Question WHERE id=?",
+    questionId
+  );
+
   // todo: 1. get a random question
   let questionToSend = {
-    text: "How tall is mount everest? (in meters)",
-    answer: "8849.0",
+    text: questionResult[0][0]["text"],
+    answer: questionResult[0][0]["answer"].toString(),
   };
+  // {
+  //   text: "How tall is mount everest? (in meters)",
+  //   answer: "8849.0",
+  // };
 
   // 2. get all players in the game
   let playersInGameResult = await pool.query(
@@ -451,4 +464,8 @@ async function showQuestion(websocket, data) {
 async function updateScores(websocket, data) {
   // 1. get scores from request
   // 2. update scores in redis to add 1 to the round winner
+}
+
+function getRandomInt(max) {
+  return Math.floor(Math.random() * max) + 1;
 }
