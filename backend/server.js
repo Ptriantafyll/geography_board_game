@@ -423,7 +423,6 @@ async function showQuestion(websocket, data) {
     questionId
   );
 
-  // todo: 1. get a random question
   let questionToSend = {
     text: questionResult[0][0]["text"],
     answer: questionResult[0][0]["answer"].toString(),
