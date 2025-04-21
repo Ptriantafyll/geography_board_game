@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS Lobby_Player (
 CREATE TABLE Question (
     id INT AUTO_INCREMENT PRIMARY KEY,
     text TEXT NOT NULL,
-    answer INT NOT NULL
+    answer FLOAT NOT NULL
 );
 
 CREATE TABLE Action (
