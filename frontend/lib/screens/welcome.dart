@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geography_board_game/providers/websocket_provider.dart';
 import 'package:geography_board_game/screens/join_lobby.dart';
 import 'package:geography_board_game/screens/new_game.dart';
 
-class WelcomeScreen extends StatelessWidget {
+class WelcomeScreen extends ConsumerWidget {
   const WelcomeScreen({super.key});
 
-  // todo: create player here and keep it live until the app is closed
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Create a websocket connection when opening the app
+    final webSocketNotifier = ref.read(websocketProvider.notifier);
+
     return Scaffold(
       appBar: AppBar(
         // backgroundColor: Theme.of(context).colorScheme.primary,
