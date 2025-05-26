@@ -4,6 +4,7 @@ const pool = require("./db");
 const redis = require("./redis");
 const createPlayer = require("./create_player");
 const deletePlayer = require("./delete_player");
+const createLobby = require("./create_lobby");
 
 const wss = new WebSocket.Server({ port: 8080 });
 
@@ -28,7 +29,7 @@ wss.on("connection", async (socket) => {
           break;
         case "CREATE_LOBBY":
           const lobbyId = uuidv4();
-          await createLobby(socket, lobbyId, playerId, data);
+          await createLobby(socket, lobbyId, playerId, data, pool);
           break;
         case "JOIN_LOBBY":
           await joinLobby(socket, data, playerId);
@@ -73,35 +74,6 @@ wss.on("connection", async (socket) => {
 });
 
 console.log("Web socket server is running");
-
-// Creates a new lobby
-async function createLobby(websocket, lobbyId, playerId, data) {
-  let lobbyCreatedMessage = JSON.stringify({
-    type: "LOBBY_CREATED",
-    lobbyId: lobbyId,
-    requestId: data.id,
-    playerId: playerId,
-  });
-
-  try {
-    await pool.query("INSERT INTO Lobby (id) VALUES (?)", lobbyId);
-
-    try {
-      await pool.query(
-        "INSERT INTO Lobby_Player (lobby_id, player_id) VALUES (?, ?)",
-        [lobbyId, playerId]
-      );
-      console.log("Player ", playerId, " joined lobby ", lobbyId);
-      console.log("send ", lobbyCreatedMessage);
-    } catch (error) {
-      console.error("Error Joining lobby", error);
-    }
-
-    await websocket.send(lobbyCreatedMessage);
-  } catch (error) {
-    console.error("Error creating lobby", error);
-  }
-}
 
 // Player joins lobby
 async function joinLobby(websocket, data, playerId) {
