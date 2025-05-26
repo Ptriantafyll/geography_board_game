@@ -2,6 +2,7 @@ const WebSocket = require("ws");
 const { v4: uuidv4 } = require("uuid");
 const pool = require("./db");
 const redis = require("./redis");
+const createPlayer = require("./create_player");
 
 const wss = new WebSocket.Server({ port: 8080 });
 
@@ -22,7 +23,7 @@ wss.on("connection", async (socket) => {
 
       switch (data.type) {
         case "CREATE_PLAYER":
-          await createPlayer(socket, playerId, data);
+          await createPlayer(socket, playerId, data, pool);
           break;
         case "CREATE_LOBBY":
           const lobbyId = uuidv4();
@@ -72,30 +73,7 @@ wss.on("connection", async (socket) => {
 
 console.log("Web socket server is running");
 
-// Creates a new player
-async function createPlayer(websocket, playerId, data) {
-  try {
-    playerName = data.name;
-    playerColor = data.color;
-    playerCreatedMessage = JSON.stringify({
-      type: "PLAYER_CREATED",
-      playerId: playerId,
-      requestId: data.id,
-    });
-
-    await pool.query("INSERT INTO Player (id, name, color) VALUES (?, ?, ?)", [
-      playerId,
-      playerName,
-      playerColor,
-    ]);
-    await websocket.send(playerCreatedMessage);
-    console.log("sent ", playerCreatedMessage);
-  } catch (error) {
-    console.error("Error creating Player", error);
-  }
-}
-
-// Creates a new player
+// Deletes a player
 async function deletePlayer(websocket, playerId, data) {
   try {
     playerDeletedMessage = JSON.stringify({
