@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS geography_board_game_db;
-USE geography_board_game_db;
+-- CREATE DATABASE IF NOT EXISTS geography_board_game_db;
+-- USE geography_board_game_db;
 
 CREATE TABLE IF NOT EXISTS Player (
     id CHAR(36) PRIMARY KEY,

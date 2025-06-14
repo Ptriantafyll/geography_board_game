@@ -1,8 +1,8 @@
-const pool = require("./db");
+const pool = require("../db");
 const fs = require("fs");
 
 async function setupDatabase() {
-  const schema = fs.readFileSync("./schema.sql", "utf8");
+  const schema = fs.readFileSync("./database/schema.sql", "utf8");
   const connection = await pool.getConnection();
   try {
     await connection.query(schema);
