@@ -12,4 +12,5 @@ const pool = mysql.createPool({
   multipleStatements: true,
 });
 
+
 module.exports = pool;
