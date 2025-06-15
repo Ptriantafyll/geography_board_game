@@ -38,7 +38,8 @@ async function deleteLobby(websocket, lobbyId) {
 }
 
 // Player joins lobby
-async function joinLobby(websocket, data, playerId, pool, clients) {
+async function joinLobby(websocket, data, 
+  playerId, pool, clients) {
   try {
     await pool.query(
       "INSERT INTO Lobby_Player (lobby_id, player_id) VALUES (?, ?)",

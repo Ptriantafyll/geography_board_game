@@ -9,7 +9,6 @@ class Player {
     this.blocksReceived = 0,
     this.actionsAvailable = const [],
     this.id = '',
-    // todo: make players choose their names
   });
 
   final Color color;

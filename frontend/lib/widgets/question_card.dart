@@ -19,7 +19,7 @@ class QuestionCard extends StatelessWidget {
     return Card(
       shadowColor: Colors.black,
       // todo: make card prettier
-      child: Container(
+      child: SizedBox(
         height: 250,
         width: 250,
         child: Column(

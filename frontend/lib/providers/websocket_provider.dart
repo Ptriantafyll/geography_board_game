@@ -63,7 +63,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketResponse?> {
   }
 
   Future<bool> createPlayer(String name, Color color) {
-    // todo: possibly make this a functionand not use it hardcoded everytime
+    // todo: possibly make this a function and not use it hardcoded everytime
     final requestId = uuid.v4();
     final completer = Completer<bool>();
     _pendingRequests[requestId] = completer;
