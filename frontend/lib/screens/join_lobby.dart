@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geography_board_game/functions/alert.dart';
-import 'package:geography_board_game/models/player.dart';
 import 'package:geography_board_game/providers/player_colors.dart';
 import 'package:geography_board_game/screens/lobby.dart';
 import 'package:geography_board_game/widgets/color_picker.dart';
@@ -51,16 +50,10 @@ class _JoinLobbyScreenState extends ConsumerState<JoinLobbyScreen> {
 
     if (response is PlayerJoinedResponse) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final currentPlayer = Player(
-          color: _availableColors[_selectedIndex],
-          name: _playerNameController.text,
-        );
-
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (ctx) => LobbyScreen(
-              // todo: make lobby have an owner
-              owner: currentPlayer,
+              isOwner: false,
               players: response.playersInLobby,
               lobbyId: _lobbyIdController.text,
             ),

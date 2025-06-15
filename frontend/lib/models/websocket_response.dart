@@ -130,6 +130,7 @@ class PlayerJoinedResponse extends WebsocketResponse {
         ),
       );
     }
+
     return PlayerJoinedResponse(
       playersInLobby: playersInLobby,
       lobbyId: json['lobbyId'],

@@ -63,7 +63,7 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
           MaterialPageRoute(
             builder: (ctx) => LobbyScreen(
               lobbyId: response.lobbyId,
-              owner: owner,
+              isOwner: true,
               players: [owner],
             ),
           ),

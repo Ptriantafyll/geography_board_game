@@ -9,12 +9,12 @@ import 'package:geography_board_game/widgets/player_item.dart';
 class LobbyScreen extends ConsumerStatefulWidget {
   const LobbyScreen({
     super.key,
-    required this.owner,
+    required this.isOwner,
     required this.players,
     required this.lobbyId,
   });
 
-  final Player owner;
+  final bool isOwner;
   final List<Player> players;
   final String lobbyId;
 
@@ -117,10 +117,13 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
           ),
         ],
       ),
-      floatingActionButton: ElevatedButton(
-        onPressed: _startGame,
-        child: Text('Εκκίνηση παιχνιδιού'),
-      ),
+      // todo: test that only owner is able to see/click this
+      floatingActionButton: widget.isOwner
+          ? ElevatedButton(
+              onPressed: _startGame,
+              child: Text('Εκκίνηση παιχνιδιού'),
+            )
+          : null,
     );
   }
 }
