@@ -1,5 +1,7 @@
+const { v4: uuidv4 } = require("uuid");
+
 // Start game
-async function startGame(websocket, data, pool, redis) {
+async function startGame(websocket, data, pool, redis, clients) {
   try {
     let gameId = uuidv4();
     await pool.query("INSERT INTO Game (id) VALUES (?)", gameId);
@@ -50,7 +52,7 @@ async function startGame(websocket, data, pool, redis) {
 }
 
 // submit answer
-async function submitAnswer(websocket, playerId, data, pool, redis) {
+async function submitAnswer(websocket, playerId, data, pool, redis, clients) {
   // 1. get answer
   let answer = data.answer;
   let gameId = data.gameId;
@@ -131,7 +133,7 @@ async function submitAnswer(websocket, playerId, data, pool, redis) {
   }
 }
 
-async function showQuestion(websocket, data, pool) {
+async function showQuestion(websocket, data, pool, clients) {
   let gameId = data.gameId;
 
   let numOfQuestionsResult = await pool.query("SELECT COUNT(id) FROM Question");

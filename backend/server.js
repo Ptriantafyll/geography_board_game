@@ -38,7 +38,7 @@ wss.on("connection", async (socket) => {
           await createLobby(socket, lobbyId, playerId, data, pool);
           break;
         case "JOIN_LOBBY":
-          await joinLobby(socket, data, playerId, pool);
+          await joinLobby(socket, data, playerId, pool, clients);
           break;
         case "DELETE_LOBBY":
           await deleteLobby(socket, data);
@@ -50,13 +50,13 @@ wss.on("connection", async (socket) => {
           await deletePlayer(socket, playerId, data, pool);
           break;
         case "SHOW_QUESTION":
-          await showQuestion(socket, data, pool);
+          await showQuestion(socket, data, pool, clients);
           break;
         case "START_GAME":
-          await startGame(socket, data, pool, redis);
+          await startGame(socket, data, pool, redis, clients);
           break;
         case "SUBMIT_ANSWER":
-          await submitAnswer(socket, playerId, data, pool, redis);
+          await submitAnswer(socket, playerId, data, pool, redis, clients);
           break;
         case "UPDATE_SCORES":
           await submitAnswer(socket, playerId, data);

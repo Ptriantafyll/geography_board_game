@@ -7,9 +7,9 @@ final colorsProvider = Provider(
     Colors.blue,
     Colors.green,
     Colors.yellow,
-    Colors.red,
-    Colors.blue,
-    Colors.green,
-    Colors.yellow,
+    // Colors.red,
+    // Colors.blue,
+    // Colors.green,
+    // Colors.yellow,
   ],
 );

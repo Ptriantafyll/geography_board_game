@@ -1,6 +1,13 @@
 # Setup database
 
+## Windows
+
+- Download and run msi installer from [https://dev.mysql.com/downloads/installer/](https://dev.mysql.com/downloads/installer/)
+
+## Linux
+
 - Make sure mysql package is installed
+
 ```bash
 sudo apt update
 sudo apt upgrade -y
@@ -14,6 +21,7 @@ sudo mysql_secure_installation
 ```
 
 - Log into mysql, create db, setup root and user passwords
+
 ```bash
 sudo mysql
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '<NEW_ROOT_PASSWORD>';
@@ -27,7 +35,7 @@ FLUSH PRIVILEGES;
 ```
 
 - Create db tables
+
 ```bash
 node database/db_setup.js
 ```
-
