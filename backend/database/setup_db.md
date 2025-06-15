@@ -3,6 +3,17 @@
 ## Windows
 
 - Download and run msi installer from [https://dev.mysql.com/downloads/installer/](https://dev.mysql.com/downloads/installer/)
+- Add mysql to PATH by environment variables
+- Create db and user
+
+```bash
+mysql -u root -p
+CREATE DATABASE geography_board_game_db;
+
+CREATE USER 'myuser'@'localhost' IDENTIFIED BY 'mypassword';
+GRANT ALL PRIVILEGES ON geography_board_game_db.* TO 'myuser'@'localhost';
+FLUSH PRIVILEGES;
+```
 
 ## Linux
 
