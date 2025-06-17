@@ -1,3 +1,5 @@
+const { deleteLobby } = require("./lobby");
+
 // Creates a new player
 async function createPlayer(websocket, playerId, data, pool) {
   try {
@@ -57,7 +59,7 @@ async function deletePlayer(websocket, playerId, data, pool) {
     console.log("Players in ", lobbyId, ": ", playersResult);
     console.log("array is empty? ", playersResult[0].length === 0);
     if (playersResult[0].length === 0 && lobbyId !== "") {
-      await deleteLobby(websocket, lobbyId);
+      await deleteLobby(websocket, { lobbyId: lobbyId }, pool);
     }
   } catch (error) {
     console.error("Error deleting Player", error);

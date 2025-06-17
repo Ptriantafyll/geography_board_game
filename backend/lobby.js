@@ -28,10 +28,10 @@ async function createLobby(websocket, lobbyId, playerId, data, pool) {
 }
 
 // Lobby deleted when all players have left
-async function deleteLobby(websocket, lobbyId) {
+async function deleteLobby(websocket, data, pool) {
   try {
-    await pool.query("DELETE FROM Lobby WHERE id =?", lobbyId);
-    console.log("Deleted lobby: ", lobbyId);
+    await pool.query("DELETE FROM Lobby WHERE id =?", data.lobbyId);
+    console.log("Deleted lobby: ", data.lobbyId);
   } catch (error) {
     console.log("Erorr deleting lobby: ", error);
   }

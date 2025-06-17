@@ -41,7 +41,7 @@ wss.on("connection", async (socket) => {
           await joinLobby(socket, data, playerId, pool, clients);
           break;
         case "DELETE_LOBBY":
-          await deleteLobby(socket, data);
+          await deleteLobby(socket, data, pool);
           break;
         case "LEAVE_LOBBY":
           await leaveLobby(socket, playerId, data, pool);
