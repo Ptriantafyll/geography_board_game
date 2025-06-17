@@ -64,6 +64,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
     }
 
     if (response is LeftLobbyResponse) {
+      // todo: if owner left, make another player the owner
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
           widget.players
@@ -80,6 +81,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
         // todo: add rejoin functionality
         Navigator.of(context).push(
           MaterialPageRoute(
+            // todo: make game have an owner as well
             builder: (ctx) => GameScreen(
               gameId: response.gameId,
               players: widget.players,
@@ -117,7 +119,6 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
           ),
         ],
       ),
-      // todo: test that only owner is able to see/click this
       floatingActionButton: widget.isOwner
           ? ElevatedButton(
               onPressed: _startGame,

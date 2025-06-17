@@ -65,7 +65,7 @@ class _JoinLobbyScreenState extends ConsumerState<JoinLobbyScreen> {
 
     return SafeArea(
       child: Container(
-        padding: const EdgeInsets.all(50),
+        padding: const EdgeInsets.all(10),
         child: Dialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(10)),
