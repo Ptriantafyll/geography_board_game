@@ -50,6 +50,8 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
     final lobbyIdWidget = Text('Lobby id: ${widget.lobbyId}');
     final response = ref.watch(websocketProvider);
 
+    // todo: check player deleted response after leaving lobby
+
     if (response is PlayerJoinedResponse) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final newPlayer = response.playersInLobby
