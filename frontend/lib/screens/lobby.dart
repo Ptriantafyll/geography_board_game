@@ -37,12 +37,9 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
   void dispose() async {
     // todo: maybe leave lobby instead of deleting and creating player when starting the app
     // leave lobby when scren is closed
-    print("leaving lobby");
     await webSocketNotifier.leaveLobby(widget.lobbyId);
     // delete player when screen is closed
-    print("left lobby");
     await webSocketNotifier.deletePlayer();
-    print("deleted player");
     super.dispose();
   }
 
