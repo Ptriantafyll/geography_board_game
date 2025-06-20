@@ -28,18 +28,17 @@ async function createLobby(websocket, lobbyId, playerId, data, pool) {
 }
 
 // Lobby deleted when all players have left
-async function deleteLobby(websocket, data, pool) {
+async function deleteLobby(lobbyId, pool) {
   try {
-    await pool.query("DELETE FROM Lobby WHERE id =?", data.lobbyId);
-    console.log("Deleted lobby: ", data.lobbyId);
+    await pool.query("DELETE FROM Lobby WHERE id =?", [lobbyId]);
+    console.log("Deleted lobby: ", lobbyId);
   } catch (error) {
     console.log("Erorr deleting lobby: ", error);
   }
 }
 
 // Player joins lobby
-async function joinLobby(websocket, data, 
-  playerId, pool, clients) {
+async function joinLobby(websocket, data, playerId, pool, clients) {
   try {
     await pool.query(
       "INSERT INTO Lobby_Player (lobby_id, player_id) VALUES (?, ?)",
@@ -90,7 +89,7 @@ async function joinLobby(websocket, data,
 }
 
 // player leaves lobby
-async function leaveLobby(websocket, playerId, data) {
+async function leaveLobby(websocket, playerId, data, pool) {
   try {
     console.log("lobby id: ", data.lobbyId);
     let playersInLobbyResult = await pool.query(
@@ -111,15 +110,6 @@ async function leaveLobby(websocket, playerId, data) {
 
     console.log("Players in lobby: ", playersInLobby);
 
-    if (playersInLobby.length === 0) {
-      console.log("No players in lobby, now deleting");
-      await deleteLobby(websocket, data.lobbyId);
-      return;
-    }
-
-    let targetIds = new Set(playersInLobby.map((player) => player.id));
-    console.log("targetIds: ", targetIds);
-
     let playerLeftLobbyMessage = JSON.stringify({
       type: "LEFT_LOBBY",
       requestId: data.id,
@@ -127,6 +117,24 @@ async function leaveLobby(websocket, playerId, data) {
       lobbyId: data.lobbyId,
     });
 
+    if (playersInLobby.length === 0) {
+      console.log("No players in lobby, now deleting");
+      await deleteLobby(data.lobbyId, pool);
+      await websocket.send(playerLeftLobbyMessage);
+      return;
+    }
+
+    let targetIds = new Set(playersInLobby.map((player) => player.id));
+    console.log("targetIds: ", targetIds);
+
+    // let playerLeftLobbyMessage = JSON.stringify({
+    //   type: "LEFT_LOBBY",
+    //   requestId: data.id,
+    //   playerId: playerId,
+    //   lobbyId: data.lobbyId,
+    // });
+
+    console.log("here");
     // send the message to all players  still in the lobby that a player has left
     for (const [playerId, websocket] of clients.entries()) {
       console.log("client id: ", playerId);

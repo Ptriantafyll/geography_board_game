@@ -12,7 +12,7 @@ const {
   updateScores,
 } = require("./game");
 
-const wss = new WebSocket.Server({ port: 8080 });
+const wss = new WebSocket.Server({ host: '0.0.0.0', port: 8080 });
 
 // Map to store clients by player id
 // todo: for now this is stored in memory, later find a better way
@@ -41,7 +41,7 @@ wss.on("connection", async (socket) => {
           await joinLobby(socket, data, playerId, pool, clients);
           break;
         case "DELETE_LOBBY":
-          await deleteLobby(socket, data, pool);
+          await deleteLobby(data, pool);
           break;
         case "LEAVE_LOBBY":
           await leaveLobby(socket, playerId, data, pool);
