@@ -127,13 +127,6 @@ async function leaveLobby(websocket, playerId, data, pool) {
     let targetIds = new Set(playersInLobby.map((player) => player.id));
     console.log("targetIds: ", targetIds);
 
-    // let playerLeftLobbyMessage = JSON.stringify({
-    //   type: "LEFT_LOBBY",
-    //   requestId: data.id,
-    //   playerId: playerId,
-    //   lobbyId: data.lobbyId,
-    // });
-
     console.log("here");
     // send the message to all players  still in the lobby that a player has left
     for (const [playerId, websocket] of clients.entries()) {
