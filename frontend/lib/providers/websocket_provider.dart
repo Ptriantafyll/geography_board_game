@@ -16,7 +16,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketResponse?> {
   final Map<String, Completer<bool>> _pendingRequests = {};
 
   WebsocketNotifier() : super(null) {
-    _channel = WebSocketChannel.connect(Uri.parse("ws://10.0.2.2:8080"));
+    _channel = WebSocketChannel.connect(Uri.parse("ws://192.168.1.251:8080"));
     // _channel = WebSocketChannel.connect(Uri.parse("ws://localhost:8080"));
 
     _channel.stream.listen(

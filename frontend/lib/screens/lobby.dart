@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+
 import 'package:geography_board_game/models/player.dart';
 import 'package:geography_board_game/models/websocket_response.dart';
 import 'package:geography_board_game/providers/websocket_provider.dart';
@@ -35,9 +37,12 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
   void dispose() async {
     // todo: maybe leave lobby instead of deleting and creating player when starting the app
     // leave lobby when scren is closed
-    webSocketNotifier.leaveLobby(widget.lobbyId);
+    print("leaving lobby");
+    await webSocketNotifier.leaveLobby(widget.lobbyId);
     // delete player when screen is closed
-    webSocketNotifier.deletePlayer();
+    print("left lobby");
+    await webSocketNotifier.deletePlayer();
+    print("deleted player");
     super.dispose();
   }
 
@@ -47,7 +52,6 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final lobbyIdWidget = Text('Lobby id: ${widget.lobbyId}');
     final response = ref.watch(websocketProvider);
 
     // todo: check player deleted response after leaving lobby
@@ -67,6 +71,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
 
     if (response is LeftLobbyResponse) {
       // todo: if owner left, make another player the owner
+      print("here");
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
           widget.players
@@ -109,15 +114,38 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
       ),
       body: Column(
         children: [
-          lobbyIdWidget,
-          Expanded(
-            child: ListView.builder(
-              itemCount: widget.players.length,
-              itemBuilder: (ctx, index) => PlayerItem(
-                player: widget.players[index],
-                isGame: false,
-              ),
-            ),
+          SizedBox(
+            height: 300,
+            child: widget.players.length <= 4
+                ? ListView.builder(
+                    itemCount: widget.players.length,
+                    itemBuilder: (ctx, index) => PlayerItem(
+                      player: widget.players[index],
+                      isGame: false,
+                    ),
+                  )
+                : GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 4,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
+                    ),
+                    itemCount: widget.players.length,
+                    itemBuilder: (ctx, index) => PlayerItem(
+                      player: widget.players[index],
+                      isGame: false,
+                    ),
+                  ),
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          QrImageView(
+            data: '1234567890',
+            version: QrVersions.auto,
+            size: 200.0,
           ),
         ],
       ),
