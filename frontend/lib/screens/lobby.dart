@@ -35,7 +35,6 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
 
   @override
   void dispose() async {
-    // todo: maybe leave lobby instead of deleting and creating player when starting the app
     // leave lobby when scren is closed
     await webSocketNotifier.leaveLobby(widget.lobbyId);
     // delete player when screen is closed
@@ -52,7 +51,6 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
     final response = ref.watch(websocketProvider);
 
     // todo: check player deleted response after leaving lobby
-
     if (response is PlayerJoinedResponse) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final newPlayer = response.playersInLobby
@@ -68,7 +66,6 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
 
     if (response is LeftLobbyResponse) {
       // todo: if owner left, make another player the owner
-      print("here");
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
           widget.players
@@ -99,7 +96,6 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        // todo: add actions for QR scan?
         // backgroundColor: Theme.of(context).colorScheme.primary,
         backgroundColor: Colors.cyan,
         title: Center(
@@ -146,6 +142,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
           ),
         ],
       ),
+      // todo: make the owner be able to copy and share the lobby id
       floatingActionButton: widget.isOwner
           ? ElevatedButton(
               onPressed: _startGame,
