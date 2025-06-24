@@ -54,7 +54,7 @@ async function startGame(websocket, data, pool, redis, clients) {
 // submit answer
 async function submitAnswer(websocket, playerId, data, pool, redis, clients) {
   // 1. get answer
-  let answer = data.answer;
+  let answer = data.answer.toString();
   let gameId = data.gameId;
   // store answer into redis
   await redis.hset(`game:${gameId}:answers`, playerId, answer);
