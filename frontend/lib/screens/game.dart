@@ -204,7 +204,6 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     if (showingScores) {
       content = Column(
         children: [
-          Text('Game ID: ${widget.gameId}'),
           Text('Last round winner: $roundWinner'),
           Expanded(
             child: ListView.builder(

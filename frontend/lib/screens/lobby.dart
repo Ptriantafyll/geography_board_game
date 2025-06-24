@@ -140,7 +140,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
             height: 10,
           ),
           QrImageView(
-            data: '1234567890',
+            data: widget.lobbyId,
             version: QrVersions.auto,
             size: 200.0,
           ),

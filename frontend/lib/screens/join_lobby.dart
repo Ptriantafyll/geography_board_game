@@ -8,7 +8,14 @@ import 'package:geography_board_game/providers/websocket_provider.dart';
 import 'package:geography_board_game/models/websocket_response.dart';
 
 class JoinLobbyScreen extends ConsumerStatefulWidget {
-  const JoinLobbyScreen({super.key});
+  const JoinLobbyScreen({
+    super.key,
+    required this.fromQRScan,
+    this.lobbyId = '',
+  });
+
+  final bool fromQRScan;
+  final String? lobbyId;
 
   @override
   ConsumerState<JoinLobbyScreen> createState() => _JoinLobbyScreenState();
@@ -21,7 +28,18 @@ class _JoinLobbyScreenState extends ConsumerState<JoinLobbyScreen> {
   final _lobbyIdController = TextEditingController();
 
   void _onJoinLobby() async {
-    if (_lobbyIdController.text.isEmpty || _playerNameController.text.isEmpty) {
+    if (widget.fromQRScan && _playerNameController.text.isEmpty) {
+      showAlertDialog(
+        'Μη έγκυρα στοιχεία.',
+        'Παρακαλώ εισάγετε ένα όνομα.',
+        context,
+      );
+      return;
+    }
+
+    if (!widget.fromQRScan &&
+        (_lobbyIdController.text.isEmpty ||
+            _playerNameController.text.isEmpty)) {
       showAlertDialog(
         'Μη έγκυρα στοιχεία',
         'Παρακαλώ εισάγετε ένα όνομα και το ID του δωματίου',
@@ -33,7 +51,12 @@ class _JoinLobbyScreenState extends ConsumerState<JoinLobbyScreen> {
     final webSocketNotifier = ref.read(websocketProvider.notifier);
     await webSocketNotifier.createPlayer(
         _playerNameController.text, _availableColors[_selectedIndex]);
-    await webSocketNotifier.joinLobby(_lobbyIdController.text);
+
+    if (widget.fromQRScan) {
+      await webSocketNotifier.joinLobby(widget.lobbyId);
+    } else {
+      await webSocketNotifier.joinLobby(_lobbyIdController.text);
+    }
   }
 
   @override
@@ -93,21 +116,22 @@ class _JoinLobbyScreenState extends ConsumerState<JoinLobbyScreen> {
                   });
                 },
               ),
-              const SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: TextField(
-                  controller: _lobbyIdController,
-                  maxLength: 36,
-                  decoration: InputDecoration(
-                    label: Text('Lobby id'),
+              if (!widget.fromQRScan) const SizedBox(height: 10),
+              if (!widget.fromQRScan)
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: TextField(
+                    controller: _lobbyIdController,
+                    maxLength: 36,
+                    decoration: InputDecoration(
+                      label: Text('Lobby id'),
+                    ),
                   ),
                 ),
-              ),
               ElevatedButton(
                 onPressed: _onJoinLobby,
                 child: const Text('Συμμετοχή'),
-              )
+              ),
             ],
           ),
         ),
