@@ -103,7 +103,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   }
 
   // todo make owner be the only one able to see the buttons
-  // todo and send responses to all 
+  // todo and send responses to all
   // todo show correct answer and make comments if someone was burnt
   void showAnswers() async {
     setState(() {
@@ -232,6 +232,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
       bottomButton = null;
     } else if (answerSubmitted) {
+      // todo: add edit answer button
       content = Center(
         child: ListView.builder(
           itemCount: widget.players.length,
@@ -276,26 +277,57 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         child: const Text('Show Answers'),
       );
     } else if (showingAnswers) {
-      // todo: add edit answer button
-      content = Center(
-        child: ListView.builder(
-          itemCount: widget.players.length,
-          itemBuilder: (ctx, index) {
-            final playerId = widget.players[index].id;
-            final answer = playersWithAnswers[playerId]!;
+      content = Column(
+        children: [
+          Text("Correct answer  ${currentQuestion.questionAnswer} "),
+          SizedBox(
+            height: 300,
+            child: widget.players.length <= 4
+                ? ListView.builder(
+                    itemCount: widget.players.length,
+                    itemBuilder: (ctx, index) {
+                      final playerId = widget.players[index].id;
+                      final answer = playersWithAnswers[playerId]!;
 
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                PlayerItem(
-                  player: widget.players[index],
-                  isGame: false,
-                ),
-                Text(answer),
-              ],
-            );
-          },
-        ),
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          PlayerItem(
+                            player: widget.players[index],
+                            isGame: false,
+                          ),
+                          Text(answer),
+                        ],
+                      );
+                    },
+                  )
+                : GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 4,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
+                    ),
+                    itemCount: widget.players.length,
+                    itemBuilder: (ctx, index) {
+                      final playerId = widget.players[index].id;
+                      final answer = playersWithAnswers[playerId]!;
+
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          PlayerItem(
+                            player: widget.players[index],
+                            isGame: false,
+                          ),
+                          Text(answer),
+                        ],
+                      );
+                    },
+                  ),
+          )
+        ],
       );
 
       bottomButton = ElevatedButton(
