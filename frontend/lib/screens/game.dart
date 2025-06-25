@@ -11,10 +11,16 @@ import 'package:geography_board_game/widgets/player_item.dart';
 import 'package:geography_board_game/widgets/question_card.dart';
 
 class GameScreen extends ConsumerStatefulWidget {
-  const GameScreen({super.key, required this.gameId, required this.players});
+  const GameScreen({
+    super.key,
+    required this.gameId,
+    required this.players,
+    required this.isOwner,
+  });
 
   final String gameId;
   final List<Player> players;
+  final bool isOwner;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _GameScreenState();
@@ -104,43 +110,13 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
   // todo make owner be the only one able to see the buttons
   // todo and send responses to all
-  // todo show correct answer and make comments if someone was burnt
+  // todo make comments if someone was burnt
   void showAnswers() async {
-    setState(() {
-      showingScores = false;
-      showingQuestion = false;
-      answerSubmitted = false;
-      showingAnswers = true;
-    });
+    await webSocketNotifier.showAnswers(widget.gameId);
   }
 
   void showScores() async {
-    final answer = currentQuestion.questionAnswer;
-    final winnerId = calculateRoundWinner(playersWithAnswers, answer);
-    setState(() {
-      showingScores = true;
-      showingQuestion = false;
-      answerSubmitted = false;
-      showingAnswers = false;
-
-      // clear every answer before showing scores
-      playersAnswered.forEach((playerId, _) {
-        playersAnswered[playerId] = false;
-      });
-
-      // calculate winner of the round
-      roundWinner = widget.players
-          .firstWhere(
-            (player) => player.id == winnerId,
-          )
-          .name;
-
-      // update scores
-      updateScores(winnerId);
-      // todo: send request to update scores in redis as well
-    });
-
-    _questionController.clear();
+    await webSocketNotifier.showScores(widget.gameId);
   }
 
   @override
@@ -176,7 +152,6 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
     if (response is AnswerSubmittedResponse) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // move to answerSubmitted after getting the response
         setState(() {
           showingScores = false;
           showingQuestion = false;
@@ -186,6 +161,51 @@ class _GameScreenState extends ConsumerState<GameScreen> {
           playersWithAnswers = response.playersWithAnswers;
           playersAnswered = response.playersAnswered;
         });
+        ref.read(websocketProvider.notifier).reset();
+      });
+    }
+
+    if (response is AnswersShownResponse) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          showingScores = false;
+          showingQuestion = false;
+          answerSubmitted = false;
+          showingAnswers = true;
+        });
+        ref.read(websocketProvider.notifier).reset();
+      });
+    }
+
+    if (response is ScoresShownResponse) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final answer = currentQuestion.questionAnswer;
+        final winnerId = calculateRoundWinner(playersWithAnswers, answer);
+        setState(() {
+          showingScores = true;
+          showingQuestion = false;
+          answerSubmitted = false;
+          showingAnswers = false;
+
+          // clear every answer before showing scores
+          playersAnswered.forEach((playerId, _) {
+            playersAnswered[playerId] = false;
+          });
+
+          // calculate winner of the round
+          roundWinner = widget.players
+              .firstWhere(
+                (player) => player.id == winnerId,
+              )
+              .name;
+
+          // update scores
+          updateScores(winnerId);
+          // todo: send request to update scores in redis as well
+        });
+
+        _questionController.clear();
+
         ref.read(websocketProvider.notifier).reset();
       });
     }
@@ -217,10 +237,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         ],
       );
 
-      bottomButton = ElevatedButton(
-        onPressed: showQuestion,
-        child: const Text('Next Question'),
-      );
+      bottomButton = widget.isOwner
+          ? ElevatedButton(
+              onPressed: showQuestion,
+              child: const Text('Next Question'),
+            )
+          : null;
     } else if (showingQuestion) {
       content = Center(
         child: QuestionCard(
@@ -270,12 +292,14 @@ class _GameScreenState extends ConsumerState<GameScreen> {
           playersAnswered.values.where((value) => value).length;
 
       // make button disabled until all players have answered
-      bottomButton = ElevatedButton(
-        onPressed: numOfPlayersThatHaveAnswered == widget.players.length
-            ? showAnswers
-            : null,
-        child: const Text('Show Answers'),
-      );
+      bottomButton = widget.isOwner
+          ? ElevatedButton(
+              onPressed: numOfPlayersThatHaveAnswered == widget.players.length
+                  ? showAnswers
+                  : null,
+              child: const Text('Show Answers'),
+            )
+          : null;
     } else if (showingAnswers) {
       content = Column(
         children: [
@@ -330,10 +354,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         ],
       );
 
-      bottomButton = ElevatedButton(
-        onPressed: showScores,
-        child: const Text('Show Scores'),
-      );
+      bottomButton = widget.isOwner
+          ? ElevatedButton(
+              onPressed: showScores,
+              child: const Text('Show Scores'),
+            )
+          : null;
     } else {
       content = Text('No content yet');
       bottomButton = null;

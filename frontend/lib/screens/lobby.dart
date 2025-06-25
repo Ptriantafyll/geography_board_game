@@ -86,6 +86,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
             builder: (ctx) => GameScreen(
               gameId: response.gameId,
               players: widget.players,
+              isOwner: widget.isOwner,
             ),
           ),
         );
