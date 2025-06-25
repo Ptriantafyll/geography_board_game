@@ -188,6 +188,49 @@ class SubmitAnswerRequest {
   }
 }
 
+// SHOW_ANSWERS request
+class ShowAnswersRequest {
+  const ShowAnswersRequest({
+    required this.id,
+    required this.gameId,
+  });
+
+  final String type = 'SHOW_ANSWERS';
+  final String gameId;
+  final String id;
+
+  // convert DeleteLobbyRequest object to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'type': type,
+      'id': id,
+      'gameId': gameId,
+    };
+  }
+}
+
+// SHOW_SCORES request
+class ShowScoresRequest {
+  const ShowScoresRequest({
+    required this.id,
+    required this.gameId,
+  });
+
+  final String type = 'SHOW_SCORES';
+  final String gameId;
+  final String id;
+
+  // convert DeleteLobbyRequest object to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'type': type,
+      'id': id,
+      'gameId': gameId,
+    };
+  }
+}
+
+
 // UDPATE_SCORES request
 class UpdateScoresRequest {
   const UpdateScoresRequest({

@@ -237,6 +237,36 @@ class PlayerAnsweredResponse extends WebsocketResponse {
   }
 }
 
+class AnswersShownResponse extends WebsocketResponse {
+  const AnswersShownResponse({
+    required this.requestId,
+  }) : super(type: 'ANSWERS_SHOWN');
+
+  @override
+  final String requestId;
+
+  factory AnswersShownResponse.fromJson(Map<String, dynamic> json) {
+    return AnswersShownResponse(
+      requestId: json['requestId'],
+    );
+  }
+}
+
+class ScoresShownResponse extends WebsocketResponse {
+  const ScoresShownResponse({
+    required this.requestId,
+  }) : super(type: 'SCORES_SHOWN');
+
+  @override
+  final String requestId;
+
+  factory ScoresShownResponse.fromJson(Map<String, dynamic> json) {
+    return ScoresShownResponse(
+      requestId: json['requestId'],
+    );
+  }
+}
+
 // todo: maybe this is not needed as we only keep scores in redis for reconnection purposes
 class ScoresUpdatedResponse extends WebsocketResponse {
   const ScoresUpdatedResponse({
@@ -307,6 +337,12 @@ WebsocketResponse parseWebsocketResponse(String jsonString) {
     case 'ANSWER_SUBMITTED':
       print(json);
       return AnswerSubmittedResponse.fromJson(json);
+    case 'ANSWERS_SHOWN':
+      print(json);
+      return AnswersShownResponse.fromJson(json);
+    case 'SCORES_SHOWN':
+      print(json);
+      return ScoresShownResponse.fromJson(json);
     case 'PLAYER_ANSWERED':
       print(json);
       return PlayerAnsweredResponse.fromJson(json);
