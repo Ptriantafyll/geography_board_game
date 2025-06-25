@@ -10,9 +10,11 @@ const {
   submitAnswer,
   showQuestion,
   updateScores,
+  showAnswers,
+  showScores,
 } = require("./game");
 
-const wss = new WebSocket.Server({ host: '0.0.0.0', port: 8080 });
+const wss = new WebSocket.Server({ host: "0.0.0.0", port: 8080 });
 
 // Map to store clients by player id
 // todo: for now this is stored in memory, later find a better way
@@ -50,7 +52,13 @@ wss.on("connection", async (socket) => {
           await deletePlayer(socket, playerId, data, pool);
           break;
         case "SHOW_QUESTION":
-          await showQuestion(socket, data, pool, clients);
+          await showQuestion(data, pool, clients);
+          break;
+        case "SHOW_ANSWERS":
+          await showAnswers(data, pool, clients);
+          break;
+        case "SHOW_SCORES":
+          await showScores(data, pool, clients);
           break;
         case "START_GAME":
           await startGame(socket, data, pool, redis, clients);

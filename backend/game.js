@@ -133,7 +133,7 @@ async function submitAnswer(websocket, playerId, data, pool, redis, clients) {
   }
 }
 
-async function showQuestion(websocket, data, pool, clients) {
+async function showQuestion(data, pool, clients) {
   let gameId = data.gameId;
 
   let numOfQuestionsResult = await pool.query("SELECT COUNT(id) FROM Question");
@@ -182,6 +182,61 @@ async function showQuestion(websocket, data, pool, clients) {
   }
 }
 
+async function showAnswers(data, pool, clients) {
+  let gameId = data.gameId;
+
+  // 1. get all players in the game
+  let playersInGameResult = await pool.query(
+    "SELECT Player.name, Player.color, Player.id FROM Player " +
+      "JOIN Game_Player ON Player.id = Game_Player.player_id " +
+      "JOIN Game ON Game.id = Game_Player.game_id WHERE Game.id =?",
+    gameId
+  );
+  let playersInGame = playersInGameResult[0];
+
+  // 2. Respond to all players to show the answers
+  let showAnswersMessage = JSON.stringify({
+    type: "ANSWERS_SHOWN",
+    requestId: data.id,
+  });
+
+  let targetIds = new Set(playersInGame.map((player) => player.id));
+  for (const [playerId, websocket] of clients.entries()) {
+    console.log("client id: ", playerId);
+    if (targetIds.has(playerId) && websocket.readyState === websocket.OPEN) {
+      await websocket.send(showAnswersMessage);
+    }
+  }
+}
+
+async function showScores(data, pool, clients) {
+  let gameId = data.gameId;
+
+  // 1. get all players in the game
+  let playersInGameResult = await pool.query(
+    "SELECT Player.name, Player.color, Player.id FROM Player " +
+      "JOIN Game_Player ON Player.id = Game_Player.player_id " +
+      "JOIN Game ON Game.id = Game_Player.game_id WHERE Game.id =?",
+    gameId
+  );
+  let playersInGame = playersInGameResult[0];
+
+  // 2. Respond to all players to show the scores
+  let showScoresMessage = JSON.stringify({
+    type: "SCORES_SHOWN",
+    requestId: data.id,
+  });
+
+  let targetIds = new Set(playersInGame.map((player) => player.id));
+  for (const [playerId, websocket] of clients.entries()) {
+    console.log("client id: ", playerId);
+    if (targetIds.has(playerId) && websocket.readyState === websocket.OPEN) {
+      await websocket.send(showScoresMessage);
+    }
+  }
+}
+
+
 async function updateScores(websocket, data) {
   // 1. get scores from request
   // 2. update scores in redis to add 1 to the round winner
@@ -191,4 +246,4 @@ function getRandomInt(max) {
   return Math.floor(Math.random() * max) + 1;
 }
 
-module.exports = { startGame, submitAnswer, showQuestion, updateScores };
+module.exports = { startGame, submitAnswer, showQuestion, showAnswers, showScores, updateScores };
