@@ -18,8 +18,9 @@ class WebsocketNotifier extends StateNotifier<WebsocketResponse?> {
   WebsocketNotifier() : super(null) {
     // todo make this work for every network
     // _channel = WebSocketChannel.connect(Uri.parse("ws://192.168.1.230:8080"));
-    _channel = WebSocketChannel.connect(Uri.parse("ws://192.168.1.251:8080"));
+    // _channel = WebSocketChannel.connect(Uri.parse("ws://192.168.1.251:8080"));
     // _channel = WebSocketChannel.connect(Uri.parse("ws://localhost:8080"));
+    _channel = WebSocketChannel.connect(Uri.parse("ws://91.99.53.152:8080"));
 
     _channel.stream.listen(
       _onEvent,
@@ -157,11 +158,11 @@ class WebsocketNotifier extends StateNotifier<WebsocketResponse?> {
     final completer = Completer<bool>();
     _pendingRequests[requestId] = completer;
 
-    final startGameRequest = ShowQuestionRequest(
+    final showQuestionRequest = ShowQuestionRequest(
       id: requestId,
       gameId: gameId,
     );
-    _channel.sink.add(jsonEncode(startGameRequest.toJson()));
+    _channel.sink.add(jsonEncode(showQuestionRequest.toJson()));
 
     return completer.future.timeout(const Duration(seconds: 10), onTimeout: () {
       _pendingRequests.remove(requestId);
