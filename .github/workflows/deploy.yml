@@ -27,7 +27,7 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
 
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v0.1.4
         with:
           host: ${{ secrets.HETZNER_VM_HOST }}
           username: ${{ secrets.HETZNER_VMUSERNAME }}
