@@ -27,13 +27,13 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
 
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v0.1.4
+        uses: fifsky/ssh-action@master
         with:
           host: ${{ secrets.HETZNER_VM_HOST }}
           username: ${{ secrets.HETZNER_VMUSERNAME }}
           key: ${{ secrets.HETZNER_VM_SSH_PRIVATE_KEY }}
           port: 22
-          script: |
+          command: |
             cd /home/deployer/geography_board_game/backend
             git pull origin main
             docker-compose down
