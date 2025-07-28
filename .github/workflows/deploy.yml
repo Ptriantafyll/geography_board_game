@@ -1,6 +1,6 @@
 # .github/workflows/deploy.yml
 
-name: Deoploy backend on hetzner VM 
+name: Deploy backend on hetzner VM 
 
 on:
   push:
@@ -30,6 +30,6 @@ jobs:
           script: |
             cd /home/deployer/geography_board_game/backend
             git pull origin main
-            docker compose down
-            docker compose up -d --build
+            docker-compose down
+            docker-compose up -d --build
             docker image prune -f
