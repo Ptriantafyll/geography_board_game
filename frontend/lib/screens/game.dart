@@ -365,19 +365,54 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       bottomButton = null;
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        // backgroundColor: Theme.of(context).colorScheme.primary,
-        backgroundColor: Colors.cyan,
-        title: Center(
-          child: Text(
-            'Poli cool',
-            style: Theme.of(context).textTheme.headlineLarge,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) {
+          // Send leave game request to server
+          print("pop");
+        } else {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Έξοδος παιχνιδιού'),
+              content: const Text('Θέλεις να φύγεις από το παιχνίδι;'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context)
+                        .pop(); // Close the dialog without leaving the game
+                  },
+                  child: const Text('Όχι'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(context)
+                        .pop(); // Close the dialog and leave the game
+                  },
+                  child: const Text('Ναι'),
+                ),
+              ],
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          // backgroundColor: Theme.of(context).colorScheme.primary,
+          automaticallyImplyLeading: false,
+          backgroundColor: Colors.cyan,
+          title: Center(
+            child: Text(
+              'Poli cool',
+              style: Theme.of(context).textTheme.headlineLarge,
+            ),
           ),
         ),
+        body: content,
+        floatingActionButton: bottomButton,
       ),
-      body: content,
-      floatingActionButton: bottomButton,
     );
   }
 }
