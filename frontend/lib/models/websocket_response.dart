@@ -104,8 +104,8 @@ class GameStartedResponse extends WebsocketResponse {
   }
 }
 
-class LeftGameResponse extends WebsocketResponse {
-  const LeftGameResponse({
+class PlayerLeftGameResponse extends WebsocketResponse {
+  const PlayerLeftGameResponse({
     required this.requestId,
     required this.playerId,
   }) : super(type: 'PLAYER_LEFT_GAME');
@@ -114,11 +114,27 @@ class LeftGameResponse extends WebsocketResponse {
   final String requestId;
   final String playerId;
 
+  // convert JSON to PlayerLeftGameResponse object
+  factory PlayerLeftGameResponse.fromJson(Map<String, dynamic> json) {
+    return PlayerLeftGameResponse(
+      requestId: json['requestId'],
+      playerId: json['playerId'],
+    );
+  }
+}
+
+class LeftGameResponse extends WebsocketResponse {
+  const LeftGameResponse({
+    required this.requestId,
+  }) : super(type: 'LEFT_GAME');
+
+  @override
+  final String requestId;
+
   // convert JSON to LeftGameResponse object
   factory LeftGameResponse.fromJson(Map<String, dynamic> json) {
     return LeftGameResponse(
       requestId: json['requestId'],
-      playerId: json['playerId'],
     );
   }
 }
@@ -352,7 +368,7 @@ WebsocketResponse parseWebsocketResponse(String jsonString) {
       return GameStartedResponse.fromJson(json);
     case 'PLAYER_LEFT_GAME':
       print(json);
-      return LeftGameResponse.fromJson(json);
+      return PlayerLeftGameResponse.fromJson(json);
     case 'QUESTION_SHOWN':
       print(json);
       return QuestionShownResponse.fromJson(json);

@@ -137,13 +137,20 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     Widget content;
     Widget? bottomButton;
 
-    if (response is LeftGameResponse) {
+    if (response is PlayerLeftGameResponse) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
           widget.players.removeWhere(
             (player) => player.id == response.playerId,
           );
         });
+        ref.read(websocketProvider.notifier).reset();
+      });
+    }
+
+    if (response is LeftGameResponse) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pop(); // Close the game screen
         ref.read(websocketProvider.notifier).reset();
       });
     }
@@ -398,9 +405,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                 ),
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).pop();
-                    Navigator.of(context)
-                        .pop(); // Close the dialog and leave the game
+                    Navigator.of(context).pop(); // Close the dialog
                     // send leave game request
                     webSocketNotifier.leaveGame(widget.gameId);
                   },
