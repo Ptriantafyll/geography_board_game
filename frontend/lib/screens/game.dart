@@ -137,6 +137,17 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     Widget content;
     Widget? bottomButton;
 
+    if (response is LeftGameResponse) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          widget.players.removeWhere(
+            (player) => player.id == response.playerId,
+          );
+        });
+        ref.read(websocketProvider.notifier).reset();
+      });
+    }
+
     if (response is QuestionShownResponse) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
@@ -369,7 +380,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
-          // Send leave game request to server
+          // show error as you are not allowed to pop
           print("pop");
         } else {
           showDialog(
@@ -390,6 +401,8 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                     Navigator.of(context).pop();
                     Navigator.of(context)
                         .pop(); // Close the dialog and leave the game
+                    // send leave game request
+                    webSocketNotifier.leaveGame(widget.gameId);
                   },
                   child: const Text('Ναι'),
                 ),

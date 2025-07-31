@@ -127,6 +127,27 @@ class StartGameRequest {
   }
 }
 
+// LEAVE_GAME request
+class LeaveGameRequest {
+  const LeaveGameRequest({
+    required this.gameId,
+    required this.id,
+  });
+
+  final String type = 'LEAVE_GAME';
+  final String gameId;
+  final String id;
+
+  // convert LeaveGameRequest object to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'type': type,
+      'gameId': gameId,
+      'id': id,
+    };
+  }
+}
+
 // DELETE_PLAYER request
 class DeletePlayerRequest {
   const DeletePlayerRequest({required this.id});

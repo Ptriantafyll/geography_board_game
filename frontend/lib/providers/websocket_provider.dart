@@ -187,6 +187,23 @@ class WebsocketNotifier extends StateNotifier<WebsocketResponse?> {
     });
   }
 
+  Future<bool> leaveGame(gameId) {
+    final requestId = uuid.v4();
+    final completer = Completer<bool>();
+    _pendingRequests[requestId] = completer;
+
+    final leaveGameRequest = LeaveGameRequest(
+      gameId: gameId,
+      id: requestId,
+    );
+    _channel.sink.add(jsonEncode(leaveGameRequest.toJson()));
+
+    return completer.future.timeout(const Duration(seconds: 10), onTimeout: () {
+      _pendingRequests.remove(requestId);
+      throw TimeoutException('Request timed out');
+    });
+  }
+
   Future<bool> submitAnswer(answer, gameId) {
     final requestId = uuid.v4();
     final completer = Completer<bool>();
