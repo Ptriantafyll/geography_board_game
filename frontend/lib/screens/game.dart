@@ -387,8 +387,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
-          // show error as you are not allowed to pop
-          print("pop");
+          // Handle leaving the game (if any data are needed to be sent)
         } else {
           showDialog(
             context: context,

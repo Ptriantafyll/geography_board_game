@@ -366,6 +366,9 @@ WebsocketResponse parseWebsocketResponse(String jsonString) {
     case 'GAME_STARTED':
       print(json);
       return GameStartedResponse.fromJson(json);
+    case 'LEFT_GAME':
+      print(json);
+      return LeftGameResponse.fromJson(json);
     case 'PLAYER_LEFT_GAME':
       print(json);
       return PlayerLeftGameResponse.fromJson(json);
