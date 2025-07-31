@@ -8,8 +8,8 @@ async function startGame(websocket, data, pool, redis, clients) {
 
     let playersInLobbyResult = await pool.query(
       "SELECT Player.name, Player.color, Player.id FROM Player " +
-        "JOIN Lobby_Player ON Player.id = Lobby_Player.player_id " +
-        "JOIN Lobby ON Lobby.id = Lobby_Player.lobby_id WHERE Lobby.id =?",
+      "JOIN Lobby_Player ON Player.id = Lobby_Player.player_id " +
+      "JOIN Lobby ON Lobby.id = Lobby_Player.lobby_id WHERE Lobby.id =?",
       data.lobbyId
     );
 
@@ -51,6 +51,52 @@ async function startGame(websocket, data, pool, redis, clients) {
   }
 }
 
+// Leave game
+async function leaveGame(websocket, playerId, data, pool, redis, clients) {
+  // 1. get gameId from data
+  let gameId = data.gameId;
+  // 2. delete player from Game_Player table
+  await pool.query(
+    "DELETE FROM Game_Player WHERE game_id = ? AND player_id = ?",
+    [gameId, playerId]
+  );
+
+  // Don't delete player from redis scores in case they rejoin the game  
+
+  // 3. notify all other players that this player has left the game
+  let playersInGameResult = await pool.query(
+    "SELECT Player.name, Player.color, Player.id FROM Player " +
+    "JOIN Game_Player ON Player.id = Game_Player.player_id " +
+    "JOIN Game ON Game.id = Game_Player.game_id WHERE Game.id =?",
+    gameId
+  );
+  let playersInGame = playersInGameResult[0];
+
+  let playerLeftGameMessage = JSON.stringify({
+    type: "PLAYER_LEFT_GAME",
+    playerLeft: playerId,
+    requestId: data.id,
+  });
+
+  let targetIds = new Set(playersInGame.map((player) => player.id));
+  console.log("targetIds: ", targetIds);
+
+  for (const [player_Id, websocket] of clients.entries()) {
+    if (targetIds.has(player_Id) && websocket.readyState === websocket.OPEN) {
+      await websocket.send(playerLeftGameMessage);
+    }
+  }
+
+  // 4. Send a message to the player that left the game
+  let leftGameMessage = JSON.stringify({
+    type: "LEFT_GAME",
+    requestId: data.id,
+  });
+
+  await websocket.send(leftGameMessage);
+  console.log("sent: ", leftGameMessage);
+}
+
 // submit answer
 async function submitAnswer(websocket, playerId, data, pool, redis, clients) {
   // 1. get answer
@@ -66,8 +112,8 @@ async function submitAnswer(websocket, playerId, data, pool, redis, clients) {
   //  i. get players from sql db (Game_Player will need data.gameId)
   let playersInGameResult = await pool.query(
     "SELECT Player.name, Player.color, Player.id FROM Player " +
-      "JOIN Game_Player ON Player.id = Game_Player.player_id " +
-      "JOIN Game ON Game.id = Game_Player.game_id WHERE Game.id =?",
+    "JOIN Game_Player ON Player.id = Game_Player.player_id " +
+    "JOIN Game ON Game.id = Game_Player.game_id WHERE Game.id =?",
     gameId
   );
   let playersInGame = playersInGameResult[0];
@@ -157,8 +203,8 @@ async function showQuestion(data, pool, clients) {
   // 2. get all players in the game
   let playersInGameResult = await pool.query(
     "SELECT Player.name, Player.color, Player.id FROM Player " +
-      "JOIN Game_Player ON Player.id = Game_Player.player_id " +
-      "JOIN Game ON Game.id = Game_Player.game_id WHERE Game.id =?",
+    "JOIN Game_Player ON Player.id = Game_Player.player_id " +
+    "JOIN Game ON Game.id = Game_Player.game_id WHERE Game.id =?",
     gameId
   );
   let playersInGame = playersInGameResult[0];
@@ -188,8 +234,8 @@ async function showAnswers(data, pool, clients) {
   // 1. get all players in the game
   let playersInGameResult = await pool.query(
     "SELECT Player.name, Player.color, Player.id FROM Player " +
-      "JOIN Game_Player ON Player.id = Game_Player.player_id " +
-      "JOIN Game ON Game.id = Game_Player.game_id WHERE Game.id =?",
+    "JOIN Game_Player ON Player.id = Game_Player.player_id " +
+    "JOIN Game ON Game.id = Game_Player.game_id WHERE Game.id =?",
     gameId
   );
   let playersInGame = playersInGameResult[0];
@@ -215,8 +261,8 @@ async function showScores(data, pool, clients) {
   // 1. get all players in the game
   let playersInGameResult = await pool.query(
     "SELECT Player.name, Player.color, Player.id FROM Player " +
-      "JOIN Game_Player ON Player.id = Game_Player.player_id " +
-      "JOIN Game ON Game.id = Game_Player.game_id WHERE Game.id =?",
+    "JOIN Game_Player ON Player.id = Game_Player.player_id " +
+    "JOIN Game ON Game.id = Game_Player.game_id WHERE Game.id =?",
     gameId
   );
   let playersInGame = playersInGameResult[0];
@@ -246,4 +292,4 @@ function getRandomInt(max) {
   return Math.floor(Math.random() * max) + 1;
 }
 
-module.exports = { startGame, submitAnswer, showQuestion, showAnswers, showScores, updateScores };
+module.exports = { startGame, leaveGame, submitAnswer, showQuestion, showAnswers, showScores, updateScores };

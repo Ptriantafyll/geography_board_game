@@ -7,6 +7,7 @@ const { createPlayer, deletePlayer } = require("./player");
 const { createLobby, deleteLobby, joinLobby, leaveLobby } = require("./lobby");
 const {
   startGame,
+  leaveGame,
   submitAnswer,
   showQuestion,
   updateScores,
@@ -62,6 +63,9 @@ wss.on("connection", async (socket) => {
           break;
         case "START_GAME":
           await startGame(socket, data, pool, redis, clients);
+          break;
+        case "LEAVE_GAME":
+          await leaveGame(socket, playerId, data, pool, redis, clients);
           break;
         case "SUBMIT_ANSWER":
           await submitAnswer(socket, playerId, data, pool, redis, clients);
