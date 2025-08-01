@@ -30,10 +30,9 @@ jobs:
           flutter pub get
           flutter build apk --release
 
-      - name: Upload to Google Drive
-        uses: adityak74/google-drive-upload-git-action@main
+      - name: Upload APK as artifact
+        uses: actions/upload-artifact@v4
         with:
-          credentials: ${{ secrets.GDRIVE_CREDENTIALS }}
-          folderId: ${{ secrets.GDRIVE_FOLDER_ID }}
-          filename: 'frontend/build/app/outputs/flutter-apk/app-release.apk'
-          name: 'board-game-${{ github.sha }}.apk'
+          name: board-game-apk
+          path: frontend/build/app/outputs/flutter-apk/app-release.apk
+          
