@@ -31,9 +31,9 @@ jobs:
           flutter build apk --release
 
       - name: Upload to Google Drive
-        uses: sowmen/gdrive-upload-action@v1
+        uses: adityak74/google-drive-upload-git-action@main
         with:
           credentials: ${{ secrets.GDRIVE_CREDENTIALS }}
-          folder-id: ${{ secrets.GDRIVE_FOLDER_ID }}
-          file-path: 'frontend/build/app/outputs/flutter-apk/app-release.apk'
-          file-name: 'board-game-${{ github.sha }}.apk'
+          folderId: ${{ secrets.GDRIVE_FOLDER_ID }}
+          filename: 'frontend/build/app/outputs/flutter-apk/app-release.apk'
+          name: 'board-game-${{ github.sha }}.apk'
