@@ -35,5 +35,5 @@ jobs:
         with:
           credentials: ${{ secrets.GDRIVE_CREDENTIALS }}
           folder-id: ${{ secrets.GDRIVE_FOLDER_ID }}
-          file-path 'frontend/build/app/outputs/flutter-apk/app-release.apk'
+          file-path: 'frontend/build/app/outputs/flutter-apk/app-release.apk'
           file-name: 'board-game-${{ github.sha }}.apk'
