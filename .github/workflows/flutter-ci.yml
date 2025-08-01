@@ -31,7 +31,7 @@ jobs:
           flutter build apk --release
 
       - name: Upload to Google Drive
-        uses: sowmen/gdrive-upload-action@v1.0.0
+        uses: sowmen/gdrive-upload-action@v1
         with:
           credentials: ${{ secrets.GDRIVE_CREDENTIALS }}
           folder-id: ${{ secrets.GDRIVE_FOLDER_ID }}
