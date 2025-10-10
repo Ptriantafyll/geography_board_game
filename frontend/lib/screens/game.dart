@@ -108,9 +108,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     await webSocketNotifier.showQuestion(widget.gameId);
   }
 
-  // todo make owner be the only one able to see the buttons
-  // todo and send responses to all
-  // todo make comments if someone was burnt
+    // todo make comments if someone was burnt
   void showAnswers() async {
     await webSocketNotifier.showAnswers(widget.gameId);
   }
