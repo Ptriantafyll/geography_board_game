@@ -1,0 +1,17 @@
+name: Self-Hosted Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - '**test**'
+
+jobs:
+  deploy:
+    runs-on: hetzner-vm
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: List files in the repository
+      run: ls -la
