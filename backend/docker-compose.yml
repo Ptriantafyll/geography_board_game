@@ -10,6 +10,7 @@ services:
       - DATABASE_URL=mysql://user:password@db:3306/geography_board_game_db
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
       - NODE_ENV=production
       - MYSQL_HOST=db
       - MYSQL_USER=user
